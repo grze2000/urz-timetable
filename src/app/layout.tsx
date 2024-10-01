@@ -37,7 +37,7 @@ const theme = createTheme({
   /** Your theme override here */
 });
 
-export const titles = {
+const titles = {
   "/day": "Mój dzień",
   "/timetable": "Plan zajęć",
   "/settings": "Ustawienia",
