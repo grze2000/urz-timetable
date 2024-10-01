@@ -14,8 +14,9 @@ import weekDay from "dayjs/plugin/weekday";
 import { Inter, Roboto_Mono } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import urzLogo from "public/urz-logo.png";
+import { useEffect } from "react";
 import "./globals.css";
 
 dayjs.locale("pl");
@@ -37,19 +38,29 @@ const theme = createTheme({
   /** Your theme override here */
 });
 
-const titles = {
-  "/day": "Mój dzień",
-  "/timetable": "Plan zajęć",
-  "/settings": "Ustawienia",
-};
-
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { majorId, specializationId } = useAppState();
+  const { majorId, specializationId, setMaojrId, setSpecializationId } =
+    useAppState();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const queryMajorId = searchParams.get("majorId");
+    const querySpecializationIds = searchParams.get("specializationIds");
+
+    if (queryMajorId && !majorId) {
+      setMaojrId(queryMajorId);
+    }
+
+    if (querySpecializationIds && !specializationId) {
+      const idsArray = querySpecializationIds.split(",");
+      setSpecializationId(idsArray[0]);
+    }
+  }, [searchParams]);
 
   return (
     <html lang="pl" className={`${inter.className} flex flex-col h-full`}>
@@ -86,14 +97,7 @@ export default function RootLayout({
               </div>
             ) : (
               <>
-                <header className="bg-primary p-4 pt-12 font-bold text-2xl text-white z-20">
-                  <h1 className="grow overflow-auto">
-                    {titles[pathname as keyof typeof titles]}
-                  </h1>
-                </header>
-                <main className="flex flex-col grow p-4 min-w-0 min-h-0 overflow-auto">
-                  {children}
-                </main>
+                {children}
                 <footer className="shadow-shadow flex justify-evenly py-2 bg-white rounded-t-xl text-[#bcc7de] z-20">
                   {navigationConfig.map(
                     ({ label, href, icon: Icon }, index) => (

@@ -1,3 +1,4 @@
+import { appConfig } from "@/config/appConfig";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -6,6 +7,7 @@ type Set<T> = (fn: (state: T) => Partial<T>) => void;
 export type TAppState = {
   majorId: string | null;
   specializationId: string | null;
+  visitedAppVersion: string | null;
 };
 
 export type TAppStateActions = {
@@ -18,6 +20,7 @@ export type TAppStateStore = TAppState & TAppStateActions;
 const initialState: TAppState = {
   majorId: null,
   specializationId: null,
+  visitedAppVersion: appConfig.version,
 };
 
 const appState = (set: Set<TAppStateStore>): TAppStateStore => ({

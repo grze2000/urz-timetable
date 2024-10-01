@@ -1,15 +1,11 @@
 ## Tasks
 
-### v.1.0.0
+### Bugs
 
-- [x] ~~Ekran wyboru kierunku i specjalności gdy nie ma tych wartości ani w local storage ani w query params~~
-- [x] ~~Dodać daty tygodni A i B dla 2024 r.~~
-- [x] ~~Przerwy pomiędzy zajęciami w zakładce mój dzień~~
+- [ ] Po wejściu ekran wyboru specjalności pojawia się na moment nawet jeśli dane są już wybrane
 
 ### Next releases
 
-- [ ] Opcja udostępnienia linku do planu zajęć (z ustawieniami kierunku i specjalności)
-- [ ] Wczytywanie ustawień kierunku i specjalności z query params
 - [ ] Checkbox w ustawieniach pozwalający na wybór czy w linku udostepniania zawierać wykluczone przedmioty
 - [ ] Możliwość wykluczenia zajęć z planu zajęć
 - [ ] Podgląd wykluczonych przedmiotów w ustawieniach i możliwość cofnięcia wykluczenia
@@ -17,6 +13,19 @@
 - [ ] Filtrowanie duplikatów zajęć
 - [ ] Dodać daty przerw w zajęciach w 2024 r.
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
+- [ ] Dodać next-pwa
+- [ ] Dodać tytuły podstron (Przerobienie layoutu aby był renderowany serwer side)
+
+### v.1.1.0
+
+- [ ] Opcja udostępnienia linku do planu zajęć (z ustawieniami kierunku i specjalności)
+- [ ] Wczytywanie ustawień kierunku i specjalności z query params
+
+### v.1.0.0
+
+- [x] ~~Ekran wyboru kierunku i specjalności gdy nie ma tych wartości ani w local storage ani w query params~~
+- [x] ~~Dodać daty tygodni A i B dla 2024 r.~~
+- [x] ~~Przerwy pomiędzy zajęciami w zakładce mój dzień~~
 
 ## Getting Started
 
