@@ -9,23 +9,32 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "axios": "^1.6.5",
-    "dayjs": "^1.11.10",
+    "@hookform/resolvers": "^3.9.0",
+    "@mantine/core": "^7.13.0",
+    "@mantine/dates": "^7.13.0",
+    "@mantine/hooks": "^7.13.0",
+    "@mantine/modals": "^7.13.0",
+    "@mantine/notifications": "^7.13.0",
+    "@tanstack/react-query": "^5.56.2",
+    "axios": "^1.7.7",
+    "dayjs": "^1.11.13",
     "next": "14.0.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.53.0",
     "react-icons": "^4.12.0",
-    "react-query": "^3.39.3"
+    "zod": "^3.23.8",
+    "zustand": "5.0.0-rc.2"
   },
   "devDependencies": {
-    "@types/node": "^20.10.7",
-    "@types/react": "^18.2.47",
-    "@types/react-dom": "^18.2.18",
-    "autoprefixer": "^10.4.16",
-    "eslint": "^8.56.0",
+    "@types/node": "^20.16.10",
+    "@types/react": "^18.3.10",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.20",
+    "eslint": "^8.57.1",
     "eslint-config-next": "14.0.4",
-    "postcss": "^8.4.33",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.3.3"
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.6.2"
   }
 }
