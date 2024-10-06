@@ -15,7 +15,10 @@
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
 - [ ] Dodać next-pwa
 - [ ] Dodać tytuły podstron (Przerobienie layoutu aby był renderowany serwer side)
-- [ ] Możliwość wyboru grup w których znajduje się użytkownik spośród wszystkich grup dla danego kierunku i specjalności
+
+### v.1.3.0
+
+- [x] Możliwość wyboru grup w których znajduje się użytkownik spośród wszystkich grup dla danego kierunku i specjalności
 
 ### v.1.2.0
 

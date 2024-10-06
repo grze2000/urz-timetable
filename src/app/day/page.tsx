@@ -14,7 +14,7 @@ export default function MyDay() {
   const lessonListRef = useRef<HTMLDivElement>(null);
   const [days, setDays] = useState(getNextDays());
   const [selectedDay, setSelectedDay] = useState(0);
-  const { majorId, specializationIds } = useAppState();
+  const { majorId, specializationIds, excludedGroups } = useAppState();
   const week = getWeekTypeFromDate(days[selectedDay].date);
   const { data, isError, isLoading } = useGetTimetable({
     week,
@@ -32,7 +32,8 @@ export default function MyDay() {
       const id = md5(jsonString);
       if (
         dayjs(lesson.pz_data_od).weekday() !== selectedWeekdayNumber ||
-        acc.find((item) => item.id === id)
+        acc.find((item) => item.id === id) ||
+        excludedGroups?.includes(lesson.spec)
       ) {
         return acc;
       }

@@ -108,8 +108,10 @@ export const InputMultiselectPure = ({
         <Combobox.Options>
           {isLoading ? (
             <Combobox.Empty>Ładowanie....</Combobox.Empty>
-          ) : (
+          ) : optionsElements.length ? (
             optionsElements
+          ) : (
+            <Combobox.Empty>Brak wyników</Combobox.Empty>
           )}
         </Combobox.Options>
       </Combobox.Dropdown>

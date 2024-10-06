@@ -1,3 +1,5 @@
+"use client";
+import { SelectGroups } from "@/components/form/SelectGroups";
 import { SelectMajor } from "@/components/form/SelectMajor";
 import { SelectSpecialization } from "@/components/form/SelectSpetialization";
 import { appConfig } from "@/config/appConfig";
@@ -33,6 +35,17 @@ export default function Settings() {
             />
             <Divider my="sm" />
             <SelectSpecialization
+              inputStyles={{
+                input: {
+                  border: 0,
+                },
+                label: {
+                  color: "gray",
+                },
+              }}
+            />
+            <Divider my="sm" />
+            <SelectGroups
               inputStyles={{
                 input: {
                   border: 0,

@@ -59,12 +59,15 @@ export default function RootLayout({
     setSpecializationIds,
     visitedAppVersion,
     setVisitedAppVersion,
+    setExcludedGroups,
+    excludedGroups,
   } = useAppState();
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const queryMajorId = searchParams.get("majorId");
     const querySpecializationIds = searchParams.get("specializationIds");
+    const queryExcludedGroups = searchParams.get("excludedGroups");
 
     if (queryMajorId && !majorId) {
       setMaojrId(queryMajorId);
@@ -76,6 +79,11 @@ export default function RootLayout({
     ) {
       const idsArray = querySpecializationIds.split(",");
       setSpecializationIds(idsArray);
+    }
+
+    if (queryExcludedGroups && (!excludedGroups || !excludedGroups.length)) {
+      const excludedGroups = queryExcludedGroups.split(",");
+      setExcludedGroups(excludedGroups);
     }
   }, [searchParams]);
 
@@ -136,7 +144,11 @@ export default function RootLayout({
                           title: `Zmiany w wersji ${appConfig.version}`,
                           children: (
                             <div className="flex flex-col">
-                              {appConfig.changelogText}
+                              <ul className="list-disc ml-6">
+                                {appConfig.changelogText.map((item, index) => (
+                                  <li key={index}>{item}</li>
+                                ))}
+                              </ul>
                               <Button
                                 className="ml-auto mt-2"
                                 onClick={modals.closeAll}

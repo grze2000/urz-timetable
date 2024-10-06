@@ -35,7 +35,7 @@ const dayNames: DayNames[] = [
 export default function Timetable() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { majorId, specializationIds } = useAppState();
+  const { majorId, specializationIds, excludedGroups } = useAppState();
   const [week, setWeek] = useState<number>(
     getWeekTypeFromDate(dayjs().toDate())
   );
@@ -54,7 +54,10 @@ export default function Timetable() {
 
         const dayIndex = dayjs(lesson.pz_data_od).day() - 1; // Indeks dnia (0 = Monday, 1 = Tuesday, itd.)
         const day = dayNames[dayIndex] as DayNames;
-        if (acc[day].lessons.find((item) => item.id === id)) {
+        if (
+          acc[day].lessons.find((item) => item.id === id) ||
+          excludedGroups?.includes(lesson.spec)
+        ) {
           return acc;
         }
 
@@ -125,6 +128,9 @@ export default function Timetable() {
     }
     if (specializationIds) {
       url.searchParams.set("specializationIds", specializationIds.join(","));
+    }
+    if (excludedGroups) {
+      url.searchParams.set("excludedGroups", excludedGroups.join(","));
     }
     navigator.share({
       title: "Plan zajęć URz",
