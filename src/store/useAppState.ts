@@ -13,6 +13,7 @@ export type TAppState = {
 export type TAppStateActions = {
   setMaojrId: (majorId: string) => void;
   setSpecializationIds: (specializationIds: string[]) => void;
+  setVisitedAppVersion: (visitedAppVersion: string) => void;
 };
 
 export type TAppStateStore = TAppState & TAppStateActions;
@@ -28,6 +29,8 @@ const appState = (set: Set<TAppStateStore>): TAppStateStore => ({
   setMaojrId: (majorId: string) => set((state) => ({ majorId })),
   setSpecializationIds: (specializationIds: string[]) =>
     set((state) => ({ specializationIds })),
+  setVisitedAppVersion: (visitedAppVersion: string) =>
+    set((state) => ({ visitedAppVersion })),
 });
 
 export const useAppState = create(
