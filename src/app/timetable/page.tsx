@@ -8,6 +8,7 @@ import { useAppState } from "@/store/useAppState";
 import { getWeekTypeFromDate } from "@/utils/getWeekTypeFromDate";
 import { ActionIcon, Loader } from "@mantine/core";
 import dayjs from "dayjs";
+import md5 from "md5";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { IoMdShare } from "react-icons/io";
@@ -34,22 +35,28 @@ const dayNames: DayNames[] = [
 export default function Timetable() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { majorId, specializationId } = useAppState();
+  const { majorId, specializationIds } = useAppState();
   const [week, setWeek] = useState<number>(
     getWeekTypeFromDate(dayjs().toDate())
   );
 
   const { data, isError, isLoading } = useGetTimetable({
     week,
-    specializationId,
+    specializationIds,
     majorId,
   });
 
   const groups = useMemo(() => {
     return (data ?? []).reduce(
       (acc: TimetableGroups, lesson) => {
+        const jsonString = JSON.stringify(lesson, Object.keys(lesson).sort());
+        const id = md5(jsonString);
+
         const dayIndex = dayjs(lesson.pz_data_od).day() - 1; // Indeks dnia (0 = Monday, 1 = Tuesday, itd.)
         const day = dayNames[dayIndex] as DayNames;
+        if (acc[day].lessons.find((item) => item.id === id)) {
+          return acc;
+        }
 
         const startTime = dayjs(
           `${lesson.pz_data_od} ${lesson.godz}:${lesson.min}`,
@@ -66,10 +73,14 @@ export default function Timetable() {
             "YYYY-MM-DD HH:mm"
           ).add(+lastLesson.licznik_g * 45, "minute");
           breakBefore = startTime.diff(lastLessonEndTime, "minute");
+          if (breakBefore < 0) {
+            breakBefore = 0;
+          }
         }
         acc[day].lessons.push({
           ...lesson,
           breakBefore,
+          id,
         });
 
         // Aktualizacja czasu rozpoczęcia dnia, jeśli jest wcześniejszy
@@ -112,12 +123,11 @@ export default function Timetable() {
     if (majorId) {
       url.searchParams.set("majorId", majorId);
     }
-    if (specializationId) {
-      url.searchParams.set("specializationIds", specializationId);
+    if (specializationIds) {
+      url.searchParams.set("specializationIds", specializationIds.join(","));
     }
     navigator.share({
       title: "Plan zajęć URz",
-      text: "Zobacz mój plan zajęć",
       url: url.toString(),
     });
   };
@@ -177,7 +187,10 @@ export default function Timetable() {
                   <div className="flex flex-col">
                     {info.lessons.length > 0 ? (
                       info.lessons.map((lesson, index) => (
-                        <LessonWithoutTimeline key={index} lesson={lesson} />
+                        <LessonWithoutTimeline
+                          key={lesson.id}
+                          lesson={lesson}
+                        />
                       ))
                     ) : (
                       <div className="text-center text-gray-500 text-sm">

@@ -3,7 +3,7 @@ import { SelectMajor } from "@/components/form/SelectMajor";
 import { SelectSpecialization } from "@/components/form/SelectSpetialization";
 import { navigationConfig } from "@/config/navigationConfig";
 import { useAppState } from "@/store/useAppState";
-import { createTheme, MantineProvider } from "@mantine/core";
+import { Button, createTheme, MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import dayjs from "dayjs";
@@ -16,7 +16,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import urzLogo from "public/urz-logo.png";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "./globals.css";
 
 dayjs.locale("pl");
@@ -44,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { majorId, specializationId, setMaojrId, setSpecializationId } =
+  const { majorId, specializationIds, setMaojrId, setSpecializationIds } =
     useAppState();
   const searchParams = useSearchParams();
 
@@ -56,18 +56,24 @@ export default function RootLayout({
       setMaojrId(queryMajorId);
     }
 
-    if (querySpecializationIds && !specializationId) {
+    if (
+      querySpecializationIds &&
+      (!specializationIds || !specializationIds.length)
+    ) {
       const idsArray = querySpecializationIds.split(",");
-      setSpecializationId(idsArray[0]);
+      setSpecializationIds(idsArray);
     }
   }, [searchParams]);
+
+  const [initialSpecializationIds, setInitialSpecializationIds] =
+    useState(specializationIds);
 
   return (
     <html lang="pl" className={`${inter.className} flex flex-col h-full`}>
       <body className={` bg-background flex flex-col flex-1 max-h-full`}>
         <QueryClientProvider client={queryClient}>
           <MantineProvider theme={theme}>
-            {!majorId || !specializationId ? (
+            {!majorId || !initialSpecializationIds?.length ? (
               <div className="bg-primary flex-1 flex flex-col gap-5 px-10">
                 <Image
                   src={urzLogo}
@@ -94,6 +100,14 @@ export default function RootLayout({
                     },
                   }}
                 />
+                <Button
+                  variant="white"
+                  className="self-center"
+                  disabled={!majorId || !specializationIds?.length}
+                  onClick={() => setInitialSpecializationIds(specializationIds)}
+                >
+                  Pokaż plan zajęć
+                </Button>
               </div>
             ) : (
               <>

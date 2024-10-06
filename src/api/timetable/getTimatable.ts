@@ -19,30 +19,34 @@ export type LessonResponse = {
 
 export type TTimetableParams = {
   week: number;
-  specializationId: string | null;
+  specializationIds: string[] | null;
   majorId: string | null;
 };
 
 export const getTimetable = ({
   week,
-  specializationId,
+  specializationIds,
   majorId,
 }: TTimetableParams) => {
-  return axios({
-    method: "POST",
-    url: `${process.env.NEXT_PUBLIC_API_URL}/zapytania/planzajec/`,
-    data: {
-      id: specializationId,
-      kierunek: majorId,
-      zakres_s: week,
-    },
-  }).then(({ data }) => data);
+  return Promise.all(
+    (specializationIds ?? []).map((specializationId) => {
+      return axios({
+        method: "POST",
+        url: `${process.env.NEXT_PUBLIC_API_URL}/zapytania/planzajec/`,
+        data: {
+          id: specializationId,
+          kierunek: majorId,
+          zakres_s: week,
+        },
+      }).then(({ data }) => data);
+    })
+  ).then((results) => results.flat());
 };
 
 export const useGetTimetable = (params: TTimetableParams) => {
   return useQuery<LessonResponse[]>({
     queryKey: ["timetable", ...Object.values(params)],
     queryFn: () => getTimetable(params),
-    enabled: !!params.specializationId && !!params.majorId,
+    enabled: !!params.specializationIds && !!params.majorId,
   });
 };

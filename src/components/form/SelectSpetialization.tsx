@@ -2,10 +2,15 @@
 import { useGetSpetializations } from "@/api/timetable/getSpecializations";
 import { useAppState } from "@/store/useAppState";
 import { useMemo } from "react";
-import { InputSelectPure, TInputSelectPureProps } from "./common/InputSelect";
+import {
+  InputMultiselectPure,
+  TInputMultiselectPureProps,
+} from "./common/InputMultiselect";
 
-export const SelectSpecialization = (props: Partial<TInputSelectPureProps>) => {
-  const { majorId, setSpecializationId, specializationId } = useAppState();
+export const SelectSpecialization = (
+  props: Partial<TInputMultiselectPureProps>
+) => {
+  const { majorId, setSpecializationIds, specializationIds } = useAppState();
   const { data, isLoading } = useGetSpetializations(majorId);
 
   const options = useMemo(() => {
@@ -16,16 +21,16 @@ export const SelectSpecialization = (props: Partial<TInputSelectPureProps>) => {
     }));
   }, [data]);
 
-  const selectedOption = options.find(
-    (item) => item.value === specializationId
-  )?.value;
+  const selectedOptions = options
+    .filter((item) => specializationIds?.includes(item.value))
+    .map((item) => item.value);
 
   return (
     <>
-      <InputSelectPure
+      <InputMultiselectPure
         {...props}
-        value={selectedOption ?? null}
-        onChange={(value) => setSpecializationId(value as string)}
+        value={selectedOptions ?? null}
+        onChange={(value) => setSpecializationIds(value ?? [])}
         placeholder="Wybierz specjalność"
         label="Specjalność"
         options={options}

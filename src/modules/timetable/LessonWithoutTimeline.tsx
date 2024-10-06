@@ -10,6 +10,7 @@ import { IoPeople, IoPersonSharp } from "react-icons/io5";
 
 export type LessonWithBreak = LessonResponse & {
   breakBefore: number;
+  id: string;
 };
 
 export const LessonWithoutTimeline = ({
@@ -30,7 +31,7 @@ export const LessonWithoutTimeline = ({
   return (
     <div className=" w-full">
       {!!lesson.breakBefore && (
-        <div className="flex justify-center text-[#461443] bg-[#881a820a] border border-[#881a8226] rounded-md text-sm py-0.5 my-4">
+        <div className="flex justify-center text-[#461443] bg-[#881a820a] border border-[#881a8226] rounded-md text-sm py-0.5 mt-4">
           <span className="text-center">
             {lesson.breakBefore > 60 &&
               `${Math.floor(lesson.breakBefore / 60)} h `}
@@ -39,7 +40,7 @@ export const LessonWithoutTimeline = ({
         </div>
       )}
       <div
-        className="border py-2 px-4 rounded-lg"
+        className="border py-2 px-4 rounded-lg mt-4"
         style={{
           backgroundColor: getColorFromSeed(COLORS, lesson.p_nazwa),
           color: darkenColor(getColorFromSeed(COLORS, lesson.p_nazwa), 125),
