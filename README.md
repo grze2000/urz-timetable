@@ -16,6 +16,10 @@
 - [ ] Dodać next-pwa
 - [ ] Dodać tytuły podstron (Przerobienie layoutu aby był renderowany serwer side)
 
+### v.1.3.1
+
+- [x] Poprawienie niewłaściwych formatów dat w zakresach dat tygodni
+
 ### v.1.3.0
 
 - [x] Możliwość wyboru grup w których znajduje się użytkownik spośród wszystkich grup dla danego kierunku i specjalności

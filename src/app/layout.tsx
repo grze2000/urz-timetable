@@ -16,6 +16,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import dayjs from "dayjs";
 import "dayjs/locale/pl";
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import sameOrAfter from "dayjs/plugin/isSameOrAfter";
 import weekOfYear from "dayjs/plugin/weekOfYear";
 import weekDay from "dayjs/plugin/weekday";
 import { Inter, Roboto_Mono } from "next/font/google";
@@ -31,6 +32,7 @@ dayjs.locale("pl");
 dayjs.extend(weekOfYear);
 dayjs.extend(weekDay);
 dayjs.extend(customParseFormat);
+dayjs.extend(sameOrAfter);
 
 const inter = Inter({ subsets: ["latin"] });
 const corben = Roboto_Mono({ subsets: ["latin"] });
