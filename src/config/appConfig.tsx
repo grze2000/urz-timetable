@@ -1,4 +1,4 @@
 export const appConfig = {
-  version: "1.3.1",
-  changelogText: ["Poprawiono błędę oznaczenia tygodni"],
+  version: "1.4.0",
+  changelogText: ["Dodano możliwość oznaczenia odwołanych zajęć"],
 };

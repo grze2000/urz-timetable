@@ -21,6 +21,7 @@ export default function MyDay() {
     specializationIds,
     majorId,
   });
+  const { excludedLessons } = useAppState();
 
   const selectedWeekday = useMemo(() => {
     if (!data || !days.length) return [];
@@ -69,6 +70,18 @@ export default function MyDay() {
         dayjs(`${b.pz_data_od} ${b.godz}:${b.min}`).valueOf()
     );
   }, [data, days, selectedDay]);
+
+  const numberOfNotExcludedLessons = useMemo(() => {
+    if (!selectedWeekday || !selectedWeekday?.length) return 0;
+    const filteredLessons = selectedWeekday.filter(
+      (lesson) =>
+        !excludedLessons?.includes(
+          `${lesson.id}${lesson.pz_data_od}${lesson.godz}${lesson.min}`
+        )
+    );
+
+    return filteredLessons.length;
+  }, [selectedWeekday, excludedLessons]);
 
   return (
     <>
@@ -122,7 +135,7 @@ export default function MyDay() {
           >
             {!!selectedWeekday.length && (
               <h3 className="mb-4 mt-2 font-bold text-gray-400">
-                {selectedWeekday.length} lekcje
+                {numberOfNotExcludedLessons} lekcje
               </h3>
             )}
             <div className="flex gap-4 grow">

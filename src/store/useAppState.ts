@@ -8,6 +8,7 @@ export type TAppState = {
   specializationIds: string[] | null;
   excludedGroups: string[] | null;
   visitedAppVersion: string | null;
+  excludedLessons: string[] | null;
 };
 
 export type TAppStateActions = {
@@ -15,6 +16,8 @@ export type TAppStateActions = {
   setSpecializationIds: (specializationIds: string[]) => void;
   setExcludedGroups: (excludedGroups: string[]) => void;
   setVisitedAppVersion: (visitedAppVersion: string) => void;
+  addLessionExclusion: (lessonId: string) => void;
+  removeLessionExclusion: (lessonId: string) => void;
 };
 
 export type TAppStateStore = TAppState & TAppStateActions;
@@ -24,6 +27,7 @@ const initialState: TAppState = {
   specializationIds: null,
   excludedGroups: null,
   visitedAppVersion: null,
+  excludedLessons: [],
 };
 
 const appState = (set: Set<TAppStateStore>): TAppStateStore => ({
@@ -35,6 +39,14 @@ const appState = (set: Set<TAppStateStore>): TAppStateStore => ({
     set((state) => ({ visitedAppVersion })),
   setExcludedGroups: (excludedGroups: string[]) =>
     set((state) => ({ excludedGroups })),
+  addLessionExclusion: (lessonId: string) =>
+    set((state) => ({
+      excludedLessons: [...(state.excludedLessons || []), lessonId],
+    })),
+  removeLessionExclusion: (lessonId: string) =>
+    set((state) => ({
+      excludedLessons: state.excludedLessons?.filter((id) => id !== lessonId),
+    })),
 });
 
 export const useAppState = create(

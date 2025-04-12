@@ -16,6 +16,10 @@
 - [ ] Dodać next-pwa
 - [ ] Dodać tytuły podstron (Przerobienie layoutu aby był renderowany serwer side)
 
+### v.1.4.0
+
+- [x] Możliwość oznaczenia odwołanych zajęć
+
 ### v.1.3.1
 
 - [x] Poprawienie niewłaściwych formatów dat w zakresach dat tygodni
