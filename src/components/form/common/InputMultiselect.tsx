@@ -1,14 +1,12 @@
 import {
-  __InputStylesNames,
   Combobox,
-  CSSProperties,
   Input,
   Pill,
   PillsInput,
+  type PillsInputProps,
   useCombobox,
 } from "@mantine/core";
 import { useState } from "react";
-import { Controller, useFormContext } from "react-hook-form";
 
 export type TInputMultiselectPureProps = {
   value: string[] | null;
@@ -20,7 +18,7 @@ export type TInputMultiselectPureProps = {
   isLoading?: boolean;
   label?: string;
   placeholder?: string;
-  inputStyles?: Partial<Record<__InputStylesNames, CSSProperties>>;
+  inputStyles?: PillsInputProps["styles"];
 };
 
 export const InputMultiselectPure = ({
@@ -96,6 +94,7 @@ export const InputMultiselectPure = ({
                 onBlur={() => combobox.closeDropdown()}
                 value={search}
                 onChange={(event) => {
+                  combobox.openDropdown();
                   combobox.updateSelectedOptionIndex();
                   setSearch(event.currentTarget.value);
                 }}
@@ -116,31 +115,5 @@ export const InputMultiselectPure = ({
         </Combobox.Options>
       </Combobox.Dropdown>
     </Combobox>
-  );
-};
-
-export type TInputMultiselectProps = Omit<
-  TInputMultiselectPureProps,
-  "value" | "onChange"
-> & {
-  name: string;
-};
-
-export const InputMultiselect = ({
-  name,
-  ...props
-}: TInputMultiselectProps) => {
-  const { control } = useFormContext();
-  return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field: { ref, value, onChange, ...field }, fieldState }) => {
-        const { error } = fieldState;
-        return (
-          <InputMultiselectPure {...props} value={value} onChange={onChange} />
-        );
-      }}
-    />
   );
 };

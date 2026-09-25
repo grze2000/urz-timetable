@@ -31,7 +31,7 @@ dayjs.extend(weekDay);
 dayjs.extend(customParseFormat);
 dayjs.extend(sameOrAfter);
 
-const theme = createTheme({});
+const theme = createTheme({ defaultRadius: "sm" });
 
 function AppShell({
   children,

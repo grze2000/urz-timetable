@@ -1,11 +1,9 @@
 import {
-  __InputStylesNames,
   Combobox,
-  CSSProperties,
   InputBase,
+  type InputBaseProps,
   useCombobox,
 } from "@mantine/core";
-import { Controller, useFormContext } from "react-hook-form";
 
 export type TInputSelectPureProps = {
   value: string | null;
@@ -17,7 +15,7 @@ export type TInputSelectPureProps = {
   isLoading?: boolean;
   label?: string;
   placeholder?: string;
-  inputStyles?: Partial<Record<__InputStylesNames, CSSProperties>>;
+  inputStyles?: InputBaseProps["styles"];
 };
 
 export const InputSelectPure = ({
@@ -71,26 +69,5 @@ export const InputSelectPure = ({
         </Combobox.Options>
       </Combobox.Dropdown>
     </Combobox>
-  );
-};
-
-export type TInputSelectProps = Omit<
-  TInputSelectPureProps,
-  "value" | "onChange"
-> & {
-  name: string;
-};
-
-export const InputSelect = ({ name, ...props }: TInputSelectProps) => {
-  const { control } = useFormContext();
-  return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field: { ref, value, onChange, ...field }, fieldState }) => {
-        const { error } = fieldState;
-        return <InputSelectPure {...props} value={value} onChange={onChange} />;
-      }}
-    />
   );
 };

@@ -17,7 +17,25 @@ Wykonano krok 1 z podsumowania rozmowy, czyli migrację Next/React/Sharp i linto
 - Porównano mobilne zrzuty `/day`, `/timetable`, `/settings` i pierwszego wejścia przed/po: brak różnic wizualnych. Sprawdzono także widok desktopowy oraz rzeczywiste ładowanie logo przez `next/image`/Sharp.
 - Aktualizację sprawdzono lokalnie na macOS, Node 24.12.0 i pnpm 10.11.0. Nie wykonano wdrożenia ani testu na produkcyjnym Linuxie/PM2. Testy z kontrolowanym API nie zastępują sprawdzenia pełnej integracji z serwisem uczelni.
 
-Mantine, Zustand, Tailwind, TypeScript i CI/CD pozostają na kolejne etapy. Poniższy raport wejściowy i tabela celów opisują stan sprzed realizacji.
+Pierwszy etap zapisano w commicie `2b0cd9e`.
+
+## Realizacja — drugi etap aktualizacji, 25.09.2026
+
+Wykonano krok 2 z podsumowania rozmowy, czyli migrację Mantine/Zustand i usunięcie zbędnych zależności (sekcja 3 szczegółowej kolejności):
+
+- `@mantine/core`, `@mantine/hooks` i `@mantine/modals` zaktualizowano razem do 9.6.2; Zustand do stabilnego 5.0.15, a `react-icons` do 5.7.0.
+- Usunięto nieużywane `@mantine/dates`, `@mantine/notifications`, `@hookform/resolvers`, `zod` i `react-hook-form` oraz nieużywane wrappery `InputSelect` i `InputMultiselect`. Zachowano komponenty `Pure`, z których korzystają ekrany.
+- Typy stylów kontrolek pochodzą teraz z publicznych `InputBaseProps` i `PillsInputProps` zamiast `__InputStylesNames`. `@types/md5` przeniesiono do `devDependencies`.
+- W motywie ustawiono `defaultRadius: "sm"`, zachowując dotychczasowe zaokrąglenia mimo nowej wartości domyślnej Mantine 9.
+- Poprawiono ponowne otwieranie listy podczas wpisywania w multiselect, również po usunięciu wcześniejszego wyboru.
+- Zachowano klucz `urz-timetable-state`, wersję i strukturę zapisanych danych oraz algorytm tworzenia identyfikatorów zajęć. Sprawdzono przywracanie starych wykluczeń, ich usuwanie i ponowny zapis po odświeżeniu strony.
+- Przeszły: instalacja offline z `--frozen-lockfile --strict-peer-dependencies`, lint bez ostrzeżeń, typecheck oraz build produkcyjny.
+- Pełny i produkcyjny audyt nadal wykazują **0 podatności**. Usunięcie Zod z zależności aplikacji nie usuwa go z całego drzewa — pozostaje zależnością narzędzi ESLint.
+- Testy Chrome na kontrolowanym API objęły wejście od zera, wszystkie ekrany i nawigację, linki udostępniania, stare ustawienia, zmianę grup i tygodnia, wybór klawiaturą, wyszukiwanie i usuwanie specjalności, modale i zamykanie Escape. Wszystkie przeszły bez błędów wykonania JavaScript.
+- Porównano widoki mobilne i desktopowy. Widoki dnia i planu pozostały bez zmian; kontrolki formularza mają drobne różnice stylów wynikające z Mantine 9, bez zmiany układu ekranów.
+- Testy wykonano lokalnie na macOS. Wdrożenie oraz weryfikacja Linux/PM2 i pełnej integracji z API uczelni pozostają do wykonania.
+
+Tailwind, TypeScript i CI/CD pozostają na kolejne etapy. Poniższy raport wejściowy i tabela celów opisują stan sprzed realizacji.
 
 ## Wynik rozpoznania
 
