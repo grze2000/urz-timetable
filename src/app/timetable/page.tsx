@@ -115,7 +115,7 @@ export default function Timetable() {
         friday: { from: null, to: null, lessons: [], label: "Piątek" },
       }
     );
-  }, [data]);
+  }, [data, excludedGroups]);
 
   const shareUrl = () => {
     const url = new URL(window.location.origin + pathname);

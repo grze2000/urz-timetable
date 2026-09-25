@@ -47,6 +47,14 @@
 
 ## Getting Started
 
+Projekt wymaga Node.js >=20.9.0; do pracy i wdrożeń zalecana jest wspierana linia Node 24 LTS. Aktualizację zweryfikowano na Node 24.12.0 i pnpm 10.11.0.
+
+Zainstaluj zależności z istniejącego lockfile i ustaw `NEXT_PUBLIC_API_URL` w `.env` na podstawie `.env.example`:
+
+```bash
+pnpm install --frozen-lockfile --strict-peer-dependencies
+```
+
 First, run the development server:
 
 ```bash
@@ -64,6 +72,20 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+
+## Sprawdzenie przed wdrożeniem
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm build
+pnpm audit
+pnpm audit --prod
+```
+
+Next.js 16 nie uruchamia lintowania podczas `build`, więc wszystkie powyższe kroki należy wykonać oddzielnie. Build pobiera Inter i Roboto Mono z Google Fonts i wymaga dostępu do sieci. Zmienna `NEXT_PUBLIC_API_URL` jest ustalana podczas budowania.
+
+Po buildzie `pnpm start` uruchamia wersję produkcyjną. Sprawdź `/day`, `/timetable` i `/settings`, także po odświeżeniu strony i wejściu z linku udostępniania. Testy migracji wykonywano lokalnie na macOS; przed wdrożeniem trzeba również zweryfikować runtime Node/PM2 i natywne zależności Sharp na serwerze Linux.
 
 ## Learn More
 

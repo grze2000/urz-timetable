@@ -69,7 +69,7 @@ export default function MyDay() {
         dayjs(`${a.pz_data_od} ${a.godz}:${a.min}`).valueOf() -
         dayjs(`${b.pz_data_od} ${b.godz}:${b.min}`).valueOf()
     );
-  }, [data, days, selectedDay]);
+  }, [data, days, selectedDay, excludedGroups]);
 
   const numberOfNotExcludedLessons = useMemo(() => {
     if (!selectedWeekday || !selectedWeekday?.length) return 0;
