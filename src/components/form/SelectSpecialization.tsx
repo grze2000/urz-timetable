@@ -1,5 +1,6 @@
 "use client";
-import { useGetSpetializations } from "@/api/timetable/getSpecializations";
+import { useDictionaries } from "@/api/timetable/getDictionaries";
+import { specializationOptions } from "@/utils/getStudyOptions";
 import { useAppState } from "@/store/useAppState";
 import { useMemo } from "react";
 import {
@@ -8,18 +9,15 @@ import {
 } from "./common/InputMultiselect";
 
 export const SelectSpecialization = (
-  props: Partial<TInputMultiselectPureProps>
+  props: Partial<TInputMultiselectPureProps>,
 ) => {
   const { majorId, setSpecializationIds, specializationIds } = useAppState();
-  const { data, isLoading } = useGetSpetializations(majorId);
+  const { data, isLoading } = useDictionaries();
 
   const options = useMemo(() => {
     if (!data) return [];
-    return data.map((item) => ({
-      value: item.id_k,
-      label: item.k_nazwa,
-    }));
-  }, [data]);
+    return specializationOptions(data, majorId);
+  }, [data, majorId]);
 
   const selectedOptions = options
     .filter((item) => specializationIds?.includes(item.value))

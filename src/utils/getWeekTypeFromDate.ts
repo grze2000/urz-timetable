@@ -1,18 +1,15 @@
-import { dateRanges } from "@/config/dates";
-import dayjs from "dayjs";
+import type { Dictionaries } from "../modules/timetable/types/Dictionaries.ts";
+import { weekStart } from "./date.ts";
 
-export const getWeekTypeFromDate = (date: Date) => {
-  for (let rangeIndex = 0; rangeIndex < dateRanges.length; rangeIndex++) {
-    const currentRange = dateRanges[rangeIndex];
-    const nextRange = dateRanges[rangeIndex + 1];
-
-    if (
-      dayjs(date).isSameOrAfter(dayjs(currentRange.startDate)) &&
-      (!nextRange || dayjs(date).isBefore(dayjs(nextRange.startDate)))
-    ) {
-      return currentRange.isWeekB ? 2 : 1;
-    }
-  }
-
-  return 1;
-};
+export function getWeekTypeFromDate(
+  date: string,
+  generation?: Dictionaries["generation"],
+) {
+  if (!generation) return null;
+  const selectedMonday = weekStart(date);
+  const sourceMonday = weekStart(generation.sourceWeekOneDate);
+  const weeks = Math.round(
+    (Date.parse(selectedMonday) - Date.parse(sourceMonday)) / (7 * 86_400_000),
+  );
+  return ((weeks % 2) + 2) % 2 === 0 ? 1 : 2;
+}

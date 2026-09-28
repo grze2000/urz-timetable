@@ -1,7 +1,7 @@
 "use client";
 import { SelectGroups } from "@/components/form/SelectGroups";
 import { SelectMajor } from "@/components/form/SelectMajor";
-import { SelectSpecialization } from "@/components/form/SelectSpetialization";
+import { SelectSpecialization } from "@/components/form/SelectSpecialization";
 import { appConfig } from "@/config/appConfig";
 import { Card, Divider } from "@mantine/core";
 import { FaInfo } from "react-icons/fa";

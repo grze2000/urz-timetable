@@ -1,54 +1,52 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { emptyPreferences, readPreferences } from "./preferences";
+import type { Preferences } from "./preferences";
 
-type Set<T> = (fn: (state: T) => Partial<T>) => void;
-
-export type TAppState = {
-  majorId: string | null;
-  specializationIds: string[] | null;
-  excludedGroups: string[] | null;
-  visitedAppVersion: string | null;
-  excludedLessons: string[] | null;
-};
-
-export type TAppStateActions = {
-  setMaojrId: (majorId: string) => void;
+export type TAppState = Preferences;
+export type TAppStateStore = TAppState & {
+  setMajorId: (majorId: string) => void;
   setSpecializationIds: (specializationIds: string[]) => void;
   setExcludedGroups: (excludedGroups: string[]) => void;
-  setVisitedAppVersion: (visitedAppVersion: string) => void;
-  addLessionExclusion: (lessonId: string) => void;
-  removeLessionExclusion: (lessonId: string) => void;
+  setVisitedAppVersion: (version: string) => void;
+  excludeLesson: (id: string) => void;
+  restoreLesson: (id: string) => void;
+  replacePreferences: (preferences: Preferences) => void;
 };
-
-export type TAppStateStore = TAppState & TAppStateActions;
-
-const initialState: TAppState = {
-  majorId: null,
-  specializationIds: null,
-  excludedGroups: null,
-  visitedAppVersion: null,
-  excludedLessons: [],
-};
-
-const appState = (set: Set<TAppStateStore>): TAppStateStore => ({
-  ...initialState,
-  setMaojrId: (majorId: string) => set((state) => ({ majorId })),
-  setSpecializationIds: (specializationIds: string[]) =>
-    set((state) => ({ specializationIds })),
-  setVisitedAppVersion: (visitedAppVersion: string) =>
-    set((state) => ({ visitedAppVersion })),
-  setExcludedGroups: (excludedGroups: string[]) =>
-    set((state) => ({ excludedGroups })),
-  addLessionExclusion: (lessonId: string) =>
-    set((state) => ({
-      excludedLessons: [...(state.excludedLessons || []), lessonId],
-    })),
-  removeLessionExclusion: (lessonId: string) =>
-    set((state) => ({
-      excludedLessons: state.excludedLessons?.filter((id) => id !== lessonId),
-    })),
-});
-
-export const useAppState = create(
-  persist(appState, { name: "urz-timetable-state" })
+export const useAppState = create<TAppStateStore>()(
+  persist(
+    (set) => ({
+      ...emptyPreferences(),
+      setMajorId: (majorId) =>
+        set({
+          majorId,
+          specializationIds: null,
+          excludedGroups: null,
+          excludedLessons: [],
+        }),
+      setSpecializationIds: (specializationIds) =>
+        set({ specializationIds, excludedGroups: null, excludedLessons: [] }),
+      setExcludedGroups: (excludedGroups) => set({ excludedGroups }),
+      setVisitedAppVersion: (visitedAppVersion) => set({ visitedAppVersion }),
+      excludeLesson: (id) =>
+        set((state) => ({
+          excludedLessons: [...new Set([...state.excludedLessons, id])],
+        })),
+      restoreLesson: (id) =>
+        set((state) => ({
+          excludedLessons: state.excludedLessons.filter(
+            (value) => value !== id,
+          ),
+        })),
+      replacePreferences: (preferences) => set(preferences),
+    }),
+    {
+      name: "urz-timetable-mentor-ab-state",
+      partialize: (state) => readPreferences(state),
+      merge: (persisted, current) => ({
+        ...current,
+        ...readPreferences(persisted),
+      }),
+    },
+  ),
 );

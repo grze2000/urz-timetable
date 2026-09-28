@@ -16,6 +16,7 @@ export type TInputMultiselectPureProps = {
     label: string;
   }[];
   isLoading?: boolean;
+  disabled?: boolean;
   label?: string;
   placeholder?: string;
   inputStyles?: PillsInputProps["styles"];
@@ -26,6 +27,7 @@ export const InputMultiselectPure = ({
   onChange,
   options,
   isLoading,
+  disabled = false,
   label,
   placeholder,
   inputStyles = {},
@@ -34,7 +36,7 @@ export const InputMultiselectPure = ({
 
   const optionsElements = options
     .filter(
-      (item) => !value?.includes(item.value) && item.label.includes(search)
+      (item) => !value?.includes(item.value) && item.label.includes(search),
     )
     .map((item) => (
       <Combobox.Option value={item.value} key={item.value}>
@@ -49,13 +51,14 @@ export const InputMultiselectPure = ({
   const selectedOptions = options.filter((item) => value?.includes(item.value));
 
   const handleValueRemove = (item: string) => {
+    if (disabled) return;
     onChange(value?.filter((i) => i !== item) || null);
   };
 
   const values = selectedOptions?.map((item) => (
     <Pill
       key={item.value}
-      withRemoveButton
+      withRemoveButton={!disabled}
       onRemove={() => handleValueRemove(item.value)}
     >
       {item.label}
@@ -67,6 +70,7 @@ export const InputMultiselectPure = ({
       store={combobox}
       withinPortal={true}
       onOptionSubmit={(val) => {
+        if (disabled) return;
         onChange([...(value || []), val]);
         combobox.closeDropdown();
       }}
@@ -74,7 +78,9 @@ export const InputMultiselectPure = ({
       <Combobox.Target>
         <PillsInput
           pointer
+          disabled={disabled}
           onClick={() => {
+            if (disabled) return;
             if (!combobox.dropdownOpened) combobox.openDropdown();
           }}
           styles={inputStyles}
@@ -90,10 +96,14 @@ export const InputMultiselectPure = ({
 
             <Combobox.EventsTarget>
               <PillsInput.Field
-                onFocus={() => combobox.openDropdown()}
+                disabled={disabled}
+                onFocus={() => {
+                  if (!disabled) combobox.openDropdown();
+                }}
                 onBlur={() => combobox.closeDropdown()}
                 value={search}
                 onChange={(event) => {
+                  if (disabled) return;
                   combobox.openDropdown();
                   combobox.updateSelectedOptionIndex();
                   setSearch(event.currentTarget.value);

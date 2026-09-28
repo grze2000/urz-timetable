@@ -1,15 +1,16 @@
 "use client";
-import { useGetTimetable } from "@/api/timetable/getTimatable";
-import {
-  LessonWithBreak,
-  LessonWithoutTimeline,
-} from "@/modules/timetable/LessonWithoutTimeline";
+import { useGetTimetable } from "@/api/timetable/getTimetable";
+import { LessonWithoutTimeline } from "@/modules/timetable/LessonWithoutTimeline";
+import { withBreaks } from "@/utils/withBreaks";
+import type { ScheduledLesson } from "@/modules/timetable/types/ScheduledLesson";
 import { useAppState } from "@/store/useAppState";
+import { createShareUrl } from "@/store/preferences";
 import { getWeekTypeFromDate } from "@/utils/getWeekTypeFromDate";
 import { ActionIcon, Loader } from "@mantine/core";
 import dayjs from "dayjs";
-import md5 from "md5";
-import { usePathname, useSearchParams } from "next/navigation";
+import { useDictionaries } from "@/api/timetable/getDictionaries";
+import { todayInWarsaw } from "@/utils/date";
+import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { IoMdShare } from "react-icons/io";
 
@@ -18,7 +19,7 @@ type DayNames = "monday" | "tuesday" | "wednesday" | "thursday" | "friday";
 type TimetableGroup = {
   from: string | null;
   to: string | null;
-  lessons: LessonWithBreak[];
+  lessons: ScheduledLesson[];
   label: string;
 };
 
@@ -34,11 +35,13 @@ const dayNames: DayNames[] = [
 
 export default function Timetable() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { majorId, specializationIds, excludedGroups } = useAppState();
-  const [week, setWeek] = useState<number>(
-    getWeekTypeFromDate(dayjs().toDate())
-  );
+  const dictionaries = useDictionaries();
+  const [selectedWeek, setWeek] = useState<number | null>(null);
+  const week =
+    selectedWeek ??
+    getWeekTypeFromDate(todayInWarsaw(), dictionaries.data?.generation) ??
+    1;
 
   const { data, isError, isLoading } = useGetTimetable({
     week,
@@ -47,95 +50,42 @@ export default function Timetable() {
   });
 
   const groups = useMemo(() => {
-    return (data ?? []).reduce(
-      (acc: TimetableGroups, lesson) => {
-        const jsonString = JSON.stringify(lesson, Object.keys(lesson).sort());
-        const id = md5(jsonString);
-
-        const dayIndex = dayjs(lesson.pz_data_od).day() - 1; // Indeks dnia (0 = Monday, 1 = Tuesday, itd.)
-        const day = dayNames[dayIndex] as DayNames;
-        if (
-          acc[day].lessons.find((item) => item.id === id) ||
-          excludedGroups?.includes(lesson.spec)
-        ) {
-          return acc;
-        }
-
-        const startTime = dayjs(
-          `${lesson.pz_data_od} ${lesson.godz}:${lesson.min}`,
-          "YYYY-MM-DD HH:mm"
+    const labels = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek"];
+    return Object.fromEntries(
+      dayNames.map((day, index) => {
+        const lessons = withBreaks(
+          (data ?? []).filter(
+            (lesson) =>
+              dayjs(lesson.date).day() === index + 1 &&
+              !excludedGroups?.includes(lesson.groupId),
+          ),
         );
-        const endTime = startTime.add(+lesson.licznik_g * 45, "minute");
-
-        // Dodanie lekcji do odpowiedniego dnia
-        let breakBefore = 0;
-        if (acc[day].lessons.length > 0) {
-          const lastLesson = acc[day].lessons[acc[day].lessons.length - 1];
-          const lastLessonEndTime = dayjs(
-            `${lastLesson.pz_data_od} ${lastLesson.godz}:${lastLesson.min}`,
-            "YYYY-MM-DD HH:mm"
-          ).add(+lastLesson.licznik_g * 45, "minute");
-          breakBefore = startTime.diff(lastLessonEndTime, "minute");
-          if (breakBefore < 0) {
-            breakBefore = 0;
-          }
-        }
-        acc[day].lessons.push({
-          ...lesson,
-          breakBefore,
-          id,
-        });
-
-        // Aktualizacja czasu rozpoczęcia dnia, jeśli jest wcześniejszy
-        if (
-          !acc[day].from ||
-          startTime.isBefore(
-            dayjs(`${lesson.pz_data_od} ${acc[day].from}`, "YYYY-MM-DD HH:mm")
-          )
-        ) {
-          acc[day].from = `${lesson.godz}:${lesson.min}`;
-        }
-
-        // Aktualizacja czasu zakończenia dnia, jeśli jest późniejszy
-        if (
-          !acc[day].to ||
-          endTime.isAfter(
-            dayjs(`${lesson.pz_data_od} ${acc[day].to}`, "YYYY-MM-DD HH:mm")
-          )
-        ) {
-          acc[day].to = endTime.format("HH:mm");
-        }
-        return acc;
-      },
-      {
-        monday: { from: null, to: null, lessons: [], label: "Poniedziałek" },
-        tuesday: { from: null, to: null, lessons: [], label: "Wtorek" },
-        wednesday: { from: null, to: null, lessons: [], label: "Środa" },
-        thursday: { from: null, to: null, lessons: [], label: "Czwartek" },
-        friday: { from: null, to: null, lessons: [], label: "Piątek" },
-      }
-    );
+        return [
+          day,
+          {
+            from: lessons[0]?.startTime ?? null,
+            to: lessons.length
+              ? lessons.reduce(
+                  (latest, lesson) =>
+                    lesson.endTime > latest ? lesson.endTime : latest,
+                  lessons[0].endTime,
+                )
+              : null,
+            lessons,
+            label: labels[index],
+          },
+        ];
+      }),
+    ) as TimetableGroups;
   }, [data, excludedGroups]);
 
   const shareUrl = () => {
-    const url = new URL(window.location.origin + pathname);
-    searchParams.forEach((value, key) => {
-      url.searchParams.set(key, value);
+    const url = createShareUrl(window.location.origin + pathname, {
+      majorId,
+      specializationIds,
+      excludedGroups,
     });
-
-    if (majorId) {
-      url.searchParams.set("majorId", majorId);
-    }
-    if (specializationIds) {
-      url.searchParams.set("specializationIds", specializationIds.join(","));
-    }
-    if (excludedGroups) {
-      url.searchParams.set("excludedGroups", excludedGroups.join(","));
-    }
-    navigator.share({
-      title: "Plan zajęć URz",
-      url: url.toString(),
-    });
+    navigator.share({ title: "Plan zajęć URz", url });
   };
 
   return (

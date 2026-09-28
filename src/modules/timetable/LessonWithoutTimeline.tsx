@@ -1,32 +1,20 @@
-import { LessonResponse } from "@/api/timetable/getTimatable";
+import type { ScheduledLesson } from "./types/ScheduledLesson";
+import { teacherParts } from "@/utils/getTeacherParts";
 import { COLORS } from "@/config/colors";
 import { darkenColor } from "@/utils/darkenColor";
 import { getColorFromSeed } from "@/utils/getColorFromSeed";
-import dayjs from "dayjs";
-import { useMemo } from "react";
 import { FaLocationPin } from "react-icons/fa6";
 import { HiSpeakerphone } from "react-icons/hi";
 import { IoPeople, IoPersonSharp } from "react-icons/io5";
 
-export type LessonWithBreak = LessonResponse & {
-  breakBefore: number;
-  id: string;
-};
-
 export const LessonWithoutTimeline = ({
   lesson,
 }: {
-  lesson: LessonWithBreak;
+  lesson: ScheduledLesson;
 }) => {
-  const endTime = useMemo(
-    () =>
-      dayjs()
-        .hour(Number(lesson.godz))
-        .minute(Number(lesson.min))
-        .add(45 * Number(lesson.licznik_g), "minute")
-        .format("HH:mm"),
-    [lesson]
-  );
+  const [teacherTitle, teacherFirstName, teacherLastName] =
+    teacherParts(lesson);
+  const [startHour, startMinute] = lesson.startTime.split(":");
 
   return (
     <div className=" w-full">
@@ -42,28 +30,28 @@ export const LessonWithoutTimeline = ({
       <div
         className="border py-2 px-4 rounded-lg mt-4"
         style={{
-          backgroundColor: getColorFromSeed(COLORS, lesson.p_nazwa),
-          color: darkenColor(getColorFromSeed(COLORS, lesson.p_nazwa), 125),
+          backgroundColor: getColorFromSeed(COLORS, lesson.subjectName),
+          color: darkenColor(getColorFromSeed(COLORS, lesson.subjectName), 125),
           borderColor: darkenColor(
-            getColorFromSeed(COLORS, lesson.p_nazwa),
-            25
+            getColorFromSeed(COLORS, lesson.subjectName),
+            25,
           ),
         }}
       >
         <div className="flex flex-col gap-0.5 text-sm">
           <div className="flex justify-between gap-1">
             <span className="font-bold">
-              {lesson.godz}:{lesson.min} - {endTime}
+              {startHour}:{startMinute} - {lesson.endTime}
             </span>
             <span className="font-bold text-md text-right">
-              {lesson.p_nazwa}
+              {lesson.subjectName}
             </span>
           </div>
           <div className="flex justify-end">
             <div className="flex items-center gap-2">
               <IoPersonSharp />
               <span>
-                {lesson.tytul_naukowy_nazwa} {lesson.imie} {lesson.nazwisko}
+                {teacherTitle} {teacherFirstName} {teacherLastName}
               </span>
             </div>
           </div>
@@ -71,16 +59,16 @@ export const LessonWithoutTimeline = ({
             <div>
               <div className="flex items-center gap-2">
                 <FaLocationPin />
-                <span>Sala {lesson.bs_nazwa}</span>
+                <span>Sala {lesson.roomName}</span>
               </div>
               <div className="flex items-center gap-2">
                 <IoPeople />
-                <span>{lesson.spec}</span>
+                <span>{lesson.groupName}</span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <HiSpeakerphone />
-              <span>{lesson.fz_nazwa}</span>
+              <span>{lesson.classTypeName}</span>
             </div>
           </div>
         </div>

@@ -1,87 +1,51 @@
 "use client";
-import { useGetTimetable } from "@/api/timetable/getTimatable";
+import { useGetTimetable } from "@/api/timetable/getTimetable";
 import { Lesson } from "@/modules/timetable/Lesson";
-import { LessonWithBreak } from "@/modules/timetable/LessonWithoutTimeline";
+import { withBreaks } from "@/utils/withBreaks";
 import { useAppState } from "@/store/useAppState";
 import { getNextDays } from "@/utils/getNextDays";
 import { getWeekTypeFromDate } from "@/utils/getWeekTypeFromDate";
 import { Loader } from "@mantine/core";
 import dayjs from "dayjs";
-import md5 from "md5";
+import { useDictionaries } from "@/api/timetable/getDictionaries";
+import { isWithinTeachingPeriod } from "@/utils/date";
 import { useMemo, useRef, useState } from "react";
 
 export default function MyDay() {
   const lessonListRef = useRef<HTMLDivElement>(null);
-  const [days, setDays] = useState(getNextDays());
+  const [days] = useState(getNextDays);
   const [selectedDay, setSelectedDay] = useState(0);
   const { majorId, specializationIds, excludedGroups } = useAppState();
-  const week = getWeekTypeFromDate(days[selectedDay].date);
+  const dictionaries = useDictionaries();
+  const selectedDate = dayjs(days[selectedDay].date).format("YYYY-MM-DD");
+  const isTeachingDay = isWithinTeachingPeriod(selectedDate);
+  const week = isTeachingDay
+    ? getWeekTypeFromDate(selectedDate, dictionaries.data?.generation)
+    : null;
   const { data, isError, isLoading } = useGetTimetable({
-    week,
+    week: week ?? 1,
+    date: selectedDate,
     specializationIds,
     majorId,
+    enabled: isTeachingDay,
   });
   const { excludedLessons } = useAppState();
 
-  const selectedWeekday = useMemo(() => {
-    if (!data || !days.length) return [];
+  const selectedWeekday = useMemo(
+    () =>
+      withBreaks(
+        (isTeachingDay ? (data ?? []) : []).filter(
+          (lesson) =>
+            lesson.date === selectedDate &&
+            !excludedGroups?.includes(lesson.groupId),
+        ),
+      ),
+    [isTeachingDay, data, selectedDate, excludedGroups],
+  );
 
-    const selectedWeekdayNumber = dayjs(days[selectedDay].date).weekday();
-
-    const filteredLessons = data.reduce((acc, lesson) => {
-      const jsonString = JSON.stringify(lesson, Object.keys(lesson).sort());
-      const id = md5(jsonString);
-      if (
-        dayjs(lesson.pz_data_od).weekday() !== selectedWeekdayNumber ||
-        acc.find((item) => item.id === id) ||
-        excludedGroups?.includes(lesson.spec)
-      ) {
-        return acc;
-      }
-
-      const currentLessonStart = dayjs(
-        `${lesson.pz_data_od} ${lesson.godz}:${lesson.min}`,
-        "YYYY-MM-DD HH:mm"
-      );
-
-      let breakBefore = 0;
-      if (acc.length > 0) {
-        const previousLessonEnd = dayjs(
-          `${acc[acc.length - 1].pz_data_od} ${acc[acc.length - 1].godz}:${
-            acc[acc.length - 1].min
-          }`,
-          "YYYY-MM-DD HH:mm"
-        ).add(+acc[acc.length - 1].licznik_g * 45, "minute");
-
-        breakBefore = currentLessonStart.diff(previousLessonEnd, "minute");
-        if (breakBefore < 0) {
-          breakBefore = 0;
-        }
-      }
-
-      acc.push({ ...lesson, breakBefore, id });
-
-      return acc;
-    }, [] as LessonWithBreak[]);
-
-    return filteredLessons.sort(
-      (a, b) =>
-        dayjs(`${a.pz_data_od} ${a.godz}:${a.min}`).valueOf() -
-        dayjs(`${b.pz_data_od} ${b.godz}:${b.min}`).valueOf()
-    );
-  }, [data, days, selectedDay, excludedGroups]);
-
-  const numberOfNotExcludedLessons = useMemo(() => {
-    if (!selectedWeekday || !selectedWeekday?.length) return 0;
-    const filteredLessons = selectedWeekday.filter(
-      (lesson) =>
-        !excludedLessons?.includes(
-          `${lesson.id}${lesson.pz_data_od}${lesson.godz}${lesson.min}`
-        )
-    );
-
-    return filteredLessons.length;
-  }, [selectedWeekday, excludedLessons]);
+  const numberOfNotExcludedLessons = selectedWeekday.filter(
+    (lesson) => !excludedLessons.includes(lesson.sourceLessonId ?? lesson.id),
+  ).length;
 
   return (
     <>
@@ -94,7 +58,7 @@ export default function MyDay() {
             <div className="flex justify-between items-end">
               <h2 className="text-primary font-bold text-lg flex flex-col">
                 <span className="text-gray-400 text-xs uppercase">
-                  {week === 1 ? "tydzień A" : " tydzień B"}
+                  {week === null ? "" : week === 1 ? "tydzień A" : " tydzień B"}
                 </span>
                 <span>{days[selectedDay].label} </span>{" "}
               </h2>
@@ -140,19 +104,29 @@ export default function MyDay() {
             )}
             <div className="flex gap-4 grow">
               <div className="flex flex-col grow items-stretch">
-                {!!isError && (
+                {!isTeachingDay && (
+                  <div className="self-center my-auto text-gray-400">
+                    Trwają wakacje. W tym okresie nie ma zajęć.
+                  </div>
+                )}
+                {isTeachingDay && !!isError && (
                   <div className="self-center my-auto text-gray-400 ">
                     Wystąpił błąd
                   </div>
                 )}
-                {isLoading && <Loader className="self-center my-auto" />}
-                {selectedWeekday.length === 0 && (
-                  <div className="self-center my-auto text-gray-400 ">
-                    Brak zajęć w tym dniu
-                  </div>
+                {isTeachingDay && isLoading && (
+                  <Loader className="self-center my-auto" />
                 )}
+                {isTeachingDay &&
+                  !isError &&
+                  !isLoading &&
+                  selectedWeekday.length === 0 && (
+                    <div className="self-center my-auto text-gray-400 ">
+                      Brak zajęć w tym dniu
+                    </div>
+                  )}
                 {selectedWeekday?.map((lesson, index) => (
-                  <Lesson key={index} lesson={lesson} />
+                  <Lesson key={lesson.id} lesson={lesson} />
                 ))}
               </div>
             </div>

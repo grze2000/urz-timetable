@@ -1,44 +1,21 @@
 import { COLORS } from "@/config/colors";
 import { darkenColor } from "@/utils/darkenColor";
 import { getColorFromSeed } from "@/utils/getColorFromSeed";
-import dayjs from "dayjs";
-import { useMemo } from "react";
 import { FaLocationPin } from "react-icons/fa6";
 import { HiDotsVertical, HiSpeakerphone } from "react-icons/hi";
 import { IoPersonSharp } from "react-icons/io5";
-import { LessonWithBreak } from "./LessonWithoutTimeline";
+import type { ScheduledLesson } from "./types/ScheduledLesson";
 import { ActionIcon, Menu } from "@mantine/core";
 import { useAppState } from "@/store/useAppState";
+import { teacherParts } from "@/utils/getTeacherParts";
 
-export const Lesson = ({ lesson }: { lesson: LessonWithBreak }) => {
-  const { excludedLessons, addLessionExclusion, removeLessionExclusion } =
-    useAppState();
-  const endTime = useMemo(
-    () =>
-      dayjs()
-        .hour(Number(lesson.godz))
-        .minute(Number(lesson.min))
-        .add(45 * Number(lesson.licznik_g), "minute")
-        .format("HH:mm"),
-    [lesson]
-  );
+export const Lesson = ({ lesson }: { lesson: ScheduledLesson }) => {
+  const { excludedLessons, excludeLesson, restoreLesson } = useAppState();
+  const exclusionId = lesson.sourceLessonId ?? lesson.id;
+  const isExcluded = excludedLessons.includes(exclusionId);
 
-  const excludeLesson = () => {
-    addLessionExclusion(
-      `${lesson.id}${lesson.pz_data_od}${lesson.godz}${lesson.min}`
-    );
-  };
-
-  const restoreLesson = () => {
-    removeLessionExclusion(
-      `${lesson.id}${lesson.pz_data_od}${lesson.godz}${lesson.min}`
-    );
-  };
-
-  const isExcluded = useMemo(() => {
-    const lessonId = `${lesson.id}${lesson.pz_data_od}${lesson.godz}${lesson.min}`;
-    return excludedLessons?.includes(lessonId);
-  }, [excludedLessons, lesson]);
+  const [teacherTitle, teacherFirstName, teacherLastName] =
+    teacherParts(lesson);
 
   return (
     <div className="flex ">
@@ -48,7 +25,7 @@ export const Lesson = ({ lesson }: { lesson: LessonWithBreak }) => {
           className="absolute h-[calc(100%-0.5rem)] w-1 -left-5 top-2"
           style={
             {
-              // backgroundColor: getColorFromSeed(COLORS, lesson.p_nazwa),
+              // backgroundColor: getColorFromSeed(COLORS, lesson.subjectName),
             }
           }
         ></div>
@@ -67,7 +44,7 @@ export const Lesson = ({ lesson }: { lesson: LessonWithBreak }) => {
           <div
             className="bg-[#886998] w-4 h-4 rounded-full z-10"
             style={{
-              backgroundColor: getColorFromSeed(COLORS, lesson.p_nazwa),
+              backgroundColor: getColorFromSeed(COLORS, lesson.subjectName),
             }}
           ></div>
           <span
@@ -75,7 +52,7 @@ export const Lesson = ({ lesson }: { lesson: LessonWithBreak }) => {
               isExcluded ? "line-through opacity-40" : ""
             }`}
           >
-            {lesson.godz}:{lesson.min} - {endTime}
+            {lesson.startTime} - {lesson.endTime}
           </span>
           <Menu shadow="md" position="bottom-end">
             <Menu.Target>
@@ -88,14 +65,14 @@ export const Lesson = ({ lesson }: { lesson: LessonWithBreak }) => {
               {isExcluded ? (
                 <Menu.Item
                   className="px-2 py-1 text-sm"
-                  onClick={restoreLesson}
+                  onClick={() => restoreLesson(exclusionId)}
                 >
                   Mam te zajęcia
                 </Menu.Item>
               ) : (
                 <Menu.Item
                   className="px-2 py-1 text-sm"
-                  onClick={excludeLesson}
+                  onClick={() => excludeLesson(exclusionId)}
                 >
                   Nie mam tych zajęć
                 </Menu.Item>
@@ -108,11 +85,14 @@ export const Lesson = ({ lesson }: { lesson: LessonWithBreak }) => {
             isExcluded ? "opacity-40" : ""
           }`}
           style={{
-            backgroundColor: getColorFromSeed(COLORS, lesson.p_nazwa),
-            color: darkenColor(getColorFromSeed(COLORS, lesson.p_nazwa), 125),
+            backgroundColor: getColorFromSeed(COLORS, lesson.subjectName),
+            color: darkenColor(
+              getColorFromSeed(COLORS, lesson.subjectName),
+              125,
+            ),
             borderColor: darkenColor(
-              getColorFromSeed(COLORS, lesson.p_nazwa),
-              25
+              getColorFromSeed(COLORS, lesson.subjectName),
+              25,
             ),
           }}
         >
@@ -122,23 +102,23 @@ export const Lesson = ({ lesson }: { lesson: LessonWithBreak }) => {
                 isExcluded ? "line-through" : ""
               }`}
             >
-              {lesson.p_nazwa}
+              {lesson.subjectName}
             </span>
             {!isExcluded && (
               <>
                 <div className="flex items-center gap-2">
                   <FaLocationPin />
-                  <span>Sala {lesson.bs_nazwa}</span>
+                  <span>Sala {lesson.roomName}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <IoPersonSharp />
                   <span>
-                    {lesson.tytul_naukowy_nazwa} {lesson.imie} {lesson.nazwisko}
+                    {teacherTitle} {teacherFirstName} {teacherLastName}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <HiSpeakerphone />
-                  <span>{lesson.fz_nazwa}</span>
+                  <span>{lesson.classTypeName}</span>
                 </div>
               </>
             )}

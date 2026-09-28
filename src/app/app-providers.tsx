@@ -1,9 +1,12 @@
 "use client";
 import { SelectMajor } from "@/components/form/SelectMajor";
-import { SelectSpecialization } from "@/components/form/SelectSpetialization";
+import { SelectSpecialization } from "@/components/form/SelectSpecialization";
 import { appConfig } from "@/config/appConfig";
 import { navigationConfig } from "@/config/navigationConfig";
 import { useAppState } from "@/store/useAppState";
+import { useDictionaries } from "@/api/timetable/getDictionaries";
+import { emptyPreferences, preferencesFromLink } from "@/store/preferences";
+import { validSelection } from "@/utils/getStudyOptions";
 import {
   ActionIcon,
   Button,
@@ -48,58 +51,58 @@ function AppShell({
     setVisitedAppVersion,
   } = useAppState();
   const searchParams = useSearchParams();
+  const dictionaries = useDictionaries();
 
   useEffect(() => {
-    // Read current preferences only when the URL changes. Changes made in
-    // settings must not reapply the original sharing link.
-    const {
-      majorId,
-      specializationIds,
-      excludedGroups,
-      setMaojrId,
-      setSpecializationIds,
-      setExcludedGroups,
-    } = useAppState.getState();
-    const queryMajorId = searchParams.get("majorId");
-    const querySpecializationIds = searchParams.get("specializationIds");
-    const queryExcludedGroups = searchParams.get("excludedGroups");
-
-    if (queryMajorId && !majorId) {
-      setMaojrId(queryMajorId);
+    try {
+      localStorage.removeItem("urz-timetable-state");
+      localStorage.removeItem("urz-timetable-mentor-state");
+    } catch {
+      /* Storage can be disabled by the browser. */
     }
-
-    if (
-      querySpecializationIds &&
-      (!specializationIds || !specializationIds.length)
-    ) {
-      const idsArray = querySpecializationIds.split(",");
-      setSpecializationIds(idsArray);
-    }
-
-    if (queryExcludedGroups && (!excludedGroups || !excludedGroups.length)) {
-      const excludedGroups = queryExcludedGroups.split(",");
-      setExcludedGroups(excludedGroups);
-    }
-  }, [searchParams]);
+    if (!dictionaries.data) return;
+    const current = useAppState.getState();
+    if (validSelection(current, dictionaries.data)) return;
+    const fromLink = preferencesFromLink(
+      new URLSearchParams(searchParams.toString()),
+      dictionaries.data,
+    );
+    current.replacePreferences(
+      fromLink ?? {
+        ...emptyPreferences(),
+        visitedAppVersion: current.visitedAppVersion,
+      },
+    );
+  }, [searchParams, dictionaries.data]);
 
   const [initialSpecializationIds, setInitialSpecializationIds] =
     useState(specializationIds);
 
   return (
     <>
-      {!majorId || !initialSpecializationIds?.length ? (
+      {pathname !== "/settings" &&
+      (!majorId ||
+        !initialSpecializationIds?.length ||
+        !specializationIds?.length) ? (
         <div className="bg-primary flex-1 flex flex-col gap-5 px-10">
-          <Image
-            src={urzLogo}
-            alt="URz"
-            width={250}
-            className="self-center"
-          />
+          <Image src={urzLogo} alt="URz" width={250} className="self-center" />
           <h1
             className={`text-white font-bold text-4xl text-center px-10 mb-10 ${headingFontClassName}`}
           >
             Plan zajęć
           </h1>
+          {dictionaries.isError && (
+            <p role="alert" className="text-white text-sm text-center">
+              Nie udało się pobrać kierunków.{" "}
+              <button
+                type="button"
+                className="underline"
+                onClick={() => dictionaries.refetch()}
+              >
+                Spróbuj ponownie
+              </button>
+            </p>
+          )}
           <SelectMajor
             inputStyles={{
               label: {
@@ -117,7 +120,10 @@ function AppShell({
           <Button
             variant="white"
             className="self-center"
-            disabled={!majorId || !specializationIds?.length}
+            disabled={
+              !dictionaries.data ||
+              !validSelection({ majorId, specializationIds }, dictionaries.data)
+            }
             onClick={() => setInitialSpecializationIds(specializationIds)}
           >
             Pokaż plan zajęć
@@ -210,7 +216,7 @@ export default function AppProviders({
   const hasMounted = useSyncExternalStore(
     subscribe,
     getClientSnapshot,
-    getServerSnapshot
+    getServerSnapshot,
   );
 
   return (

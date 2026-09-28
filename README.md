@@ -8,12 +8,14 @@
 
 ### Next releases
 
+- [ ] Możliwośc eksportu planu zajęć do PDFa do druku
+- [ ] Przerobić ekran wybierania ustawień przy pierwszym wejściu na ładny krokowy formularz
+- [ ] Obsłużyć tryby studiów stacjonarne/niestacjonarne
 - [ ] Checkbox w ustawieniach pozwalający na wybór czy w linku udostepniania zawierać wykluczone przedmioty
 - [ ] Możliwość wykluczenia zajęć z planu zajęć
 - [ ] Podgląd wykluczonych przedmiotów w ustawieniach i możliwość cofnięcia wykluczenia
-- [ ] Dodać daty przerw w zajęciach w 2024 r.
+- [ ] Zweryfikować obsługę dni wolnych np. świąt
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
-- [ ] Dodać next-pwa
 - [ ] Dodać tytuły podstron (Przerobienie layoutu aby był renderowany serwer side)
 
 ### v.1.4.0

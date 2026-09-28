@@ -3,18 +3,18 @@ import { IoHome, IoSettingsSharp } from "react-icons/io5";
 
 export const navigationConfig = [
   {
-    href: '/timetable',
+    href: "/timetable",
     icon: FaCalendar,
-    label: 'Plan zajęć'
+    label: "Plan zajęć",
   },
   {
-    href: '/day',
+    href: "/day",
     icon: IoHome,
-    label: 'Mój dzień'
+    label: "Mój dzień",
   },
   {
-    href: '/settings',
+    href: "/settings",
     icon: IoSettingsSharp,
-    label: 'Ustawienia'
+    label: "Ustawienia",
   },
-]
+];

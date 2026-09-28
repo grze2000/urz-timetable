@@ -10,5 +10,5 @@ export function lightenColor(hex: string, percent: number): string {
   b = Math.min(255, Math.floor(b * (1 + percent)));
 
   // Konwertuj z powrotem na HEX
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+  return `#${r.toString(16).padStart(2, "0")}${g.toString(16).padStart(2, "0")}${b.toString(16).padStart(2, "0")}`;
 }

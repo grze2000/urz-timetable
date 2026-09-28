@@ -1,4 +1,7 @@
 export const appConfig = {
-  version: "1.4.0",
-  changelogText: ["Dodano możliwość oznaczenia odwołanych zajęć"],
+  version: "2.0.0",
+  changelogText: [
+    "Podłączono nowe API Mentor z zachowaniem dotychczasowego interfejsu.",
+    "Po zmianie systemu wymagany jest ponowny wybór kierunku i specjalności.",
+  ],
 };
