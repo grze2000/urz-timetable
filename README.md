@@ -8,15 +8,24 @@
 
 ### Next releases
 
+- [ ] Favicon, tytuł, SEO
 - [ ] Możliwośc eksportu planu zajęć do PDFa do druku
-- [ ] Przerobić ekran wybierania ustawień przy pierwszym wejściu na ładny krokowy formularz
-- [ ] Obsłużyć tryby studiów stacjonarne/niestacjonarne
+
 - [ ] Checkbox w ustawieniach pozwalający na wybór czy w linku udostepniania zawierać wykluczone przedmioty
 - [ ] Możliwość wykluczenia zajęć z planu zajęć
 - [ ] Podgląd wykluczonych przedmiotów w ustawieniach i możliwość cofnięcia wykluczenia
 - [ ] Zweryfikować obsługę dni wolnych np. świąt
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
 - [ ] Dodać tytuły podstron (Przerobienie layoutu aby był renderowany serwer side)
+
+### v.2.1.0
+
+- [x] Przerobienie ekranu wybierania ustawień przy pierwszym wejściu na krokowy onboarding
+
+### v.2.0.0
+
+- [x] Obsłużenie trybów studiów (stacjonarne/niestacjonarne)
+- [x] Przepięcie aplikacji na nowe API mentor
 
 ### v.1.4.0
 

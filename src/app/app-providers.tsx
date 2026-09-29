@@ -1,7 +1,5 @@
 "use client";
-import { SelectMajor } from "@/components/form/SelectMajor";
-import { SelectSpecialization } from "@/components/form/SelectSpecialization";
-import { SelectStudyMode } from "@/components/form/SelectStudyMode";
+import { StudyOnboarding } from "@/components/onboarding/StudyOnboarding";
 import { appConfig } from "@/config/appConfig";
 import { navigationConfig } from "@/config/navigationConfig";
 import { useAppState } from "@/store/useAppState";
@@ -22,10 +20,8 @@ import customParseFormat from "dayjs/plugin/customParseFormat";
 import sameOrAfter from "dayjs/plugin/isSameOrAfter";
 import weekOfYear from "dayjs/plugin/weekOfYear";
 import weekDay from "dayjs/plugin/weekday";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import urzLogo from "public/urz-logo.png";
 import { Suspense, useEffect, useState, useSyncExternalStore } from "react";
 import { IoMdClose } from "react-icons/io";
 
@@ -46,14 +42,25 @@ function AppShell({
 }) {
   const pathname = usePathname();
   const {
-    majorId,
     studyMode,
+    majorId,
     specializationIds,
     visitedAppVersion,
     setVisitedAppVersion,
   } = useAppState();
   const searchParams = useSearchParams();
+  const linkParams = searchParams.toString();
   const dictionaries = useDictionaries();
+  const hasSavedSelection =
+    !!dictionaries.data &&
+    validSelection(
+      { studyMode, majorId, specializationIds },
+      dictionaries.data,
+    );
+  const linkedPreferences =
+    dictionaries.data && !hasSavedSelection
+      ? preferencesFromLink(new URLSearchParams(linkParams), dictionaries.data)
+      : null;
 
   useEffect(() => {
     try {
@@ -64,141 +71,98 @@ function AppShell({
     }
     if (!dictionaries.data) return;
     const current = useAppState.getState();
-    if (validSelection(current, dictionaries.data)) return;
-    const fromLink = preferencesFromLink(
-      new URLSearchParams(searchParams.toString()),
-      dictionaries.data,
-    );
-    current.replacePreferences(
-      fromLink ?? {
-        ...emptyPreferences(),
-        visitedAppVersion: current.visitedAppVersion,
-      },
-    );
-  }, [searchParams, dictionaries.data]);
+    if (!validSelection(current, dictionaries.data)) {
+      const fromLink = preferencesFromLink(
+        new URLSearchParams(linkParams),
+        dictionaries.data,
+      );
+      if (fromLink) current.replacePreferences(fromLink);
+    }
+  }, [linkParams, dictionaries.data]);
 
-  const [initialSpecializationIds, setInitialSpecializationIds] =
-    useState(specializationIds);
+  if (pathname !== "/settings") {
+    if (!dictionaries.data && dictionaries.isError) {
+      return (
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-primary px-6 text-center text-white">
+          <p role="alert">Nie udało się pobrać kierunków.</p>
+          <Button variant="white" onClick={() => dictionaries.refetch()}>
+            Spróbuj ponownie
+          </Button>
+        </div>
+      );
+    }
+    if (!dictionaries.data || linkedPreferences) return <AppLoading />;
+    if (!hasSavedSelection) {
+      return (
+        <StudyOnboarding
+          dictionaries={dictionaries.data}
+          headingFontClassName={headingFontClassName}
+          onComplete={(selection) => {
+            const current = useAppState.getState();
+            current.replacePreferences({
+              ...emptyPreferences(),
+              ...selection,
+              visitedAppVersion: current.visitedAppVersion,
+            });
+          }}
+        />
+      );
+    }
+  }
 
   return (
     <>
-      {pathname !== "/settings" &&
-      (!majorId ||
-        !initialSpecializationIds?.length ||
-        !specializationIds?.length) ? (
-        <div className="bg-primary flex-1 flex flex-col gap-5 px-10">
-          <Image src={urzLogo} alt="URz" width={250} className="self-center" />
-          <h1
-            className={`text-white font-bold text-4xl text-center px-10 mb-10 ${headingFontClassName}`}
+      {visitedAppVersion !== appConfig.version && (
+        <div
+          className="fixed top-0 left-0 z-30 bg-green-500 text-white w-full shadow-sm py-1.5 px-2.5 flex items-center justify-between font-semibold"
+          onClick={() =>
+            modals.open({
+              title: `Zmiany w wersji ${appConfig.version}`,
+              children: (
+                <div className="flex flex-col">
+                  <ul className="list-disc ml-6">
+                    {appConfig.changelogText.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ul>
+                  <Button className="ml-auto mt-2" onClick={modals.closeAll}>
+                    Zamknij
+                  </Button>
+                </div>
+              ),
+              onClose: () => setVisitedAppVersion(appConfig.version),
+            })
+          }
+        >
+          <span>Zobacz zmiany w wersji {appConfig.version}</span>
+          <ActionIcon
+            color="white"
+            variant="subtle"
+            size="sm"
+            onClick={(e) => {
+              setVisitedAppVersion(appConfig.version);
+              e.stopPropagation();
+            }}
           >
-            Plan zajęć
-          </h1>
-          {dictionaries.isError && (
-            <p role="alert" className="text-white text-sm text-center">
-              Nie udało się pobrać kierunków.{" "}
-              <button
-                type="button"
-                className="underline"
-                onClick={() => dictionaries.refetch()}
-              >
-                Spróbuj ponownie
-              </button>
-            </p>
-          )}
-          <SelectStudyMode
-            inputStyles={{
-              label: {
-                color: "white",
-              },
-            }}
-          />
-          <SelectMajor
-            inputStyles={{
-              label: {
-                color: "white",
-              },
-            }}
-          />
-          <SelectSpecialization
-            inputStyles={{
-              label: {
-                color: "white",
-              },
-            }}
-          />
-          <Button
-            variant="white"
-            className="self-center"
-            disabled={
-              !dictionaries.data ||
-              !validSelection(
-                { studyMode, majorId, specializationIds },
-                dictionaries.data,
-              )
-            }
-            onClick={() => setInitialSpecializationIds(specializationIds)}
-          >
-            Pokaż plan zajęć
-          </Button>
+            <IoMdClose size={20} />
+          </ActionIcon>
         </div>
-      ) : (
-        <>
-          {visitedAppVersion !== appConfig.version && (
-            <div
-              className="fixed top-0 left-0 z-30 bg-green-500 text-white w-full shadow-sm py-1.5 px-2.5 flex items-center justify-between font-semibold"
-              onClick={() =>
-                modals.open({
-                  title: `Zmiany w wersji ${appConfig.version}`,
-                  children: (
-                    <div className="flex flex-col">
-                      <ul className="list-disc ml-6">
-                        {appConfig.changelogText.map((item, index) => (
-                          <li key={index}>{item}</li>
-                        ))}
-                      </ul>
-                      <Button
-                        className="ml-auto mt-2"
-                        onClick={modals.closeAll}
-                      >
-                        Zamknij
-                      </Button>
-                    </div>
-                  ),
-                  onClose: () => setVisitedAppVersion(appConfig.version),
-                })
-              }
-            >
-              <span>Zobacz zmiany w wersji {appConfig.version}</span>
-              <ActionIcon
-                color="white"
-                variant="subtle"
-                size="sm"
-                onClick={(e) => {
-                  setVisitedAppVersion(appConfig.version);
-                  e.stopPropagation();
-                }}
-              >
-                <IoMdClose size={20} />
-              </ActionIcon>
-            </div>
-          )}
-          {children}
-          <footer className="shadow-shadow flex justify-evenly py-2 bg-white rounded-t-xl text-[#bcc7de] z-20">
-            {navigationConfig.map(({ label, href, icon: Icon }, index) => (
-              <Link
-                key={index}
-                href={href}
-                className={`flex flex-col items-center ${
-                  href === pathname ? "text-primary" : ""
-                }`}
-              >
-                <Icon size={25} />
-                <span className="font-bold text-sm">{label}</span>
-              </Link>
-            ))}
-          </footer>
-        </>
       )}
+      {children}
+      <footer className="shadow-shadow flex justify-evenly py-2 bg-white rounded-t-xl text-[#bcc7de] z-20">
+        {navigationConfig.map(({ label, href, icon: Icon }, index) => (
+          <Link
+            key={index}
+            href={href}
+            className={`flex flex-col items-center ${
+              href === pathname ? "text-primary" : ""
+            }`}
+          >
+            <Icon size={25} />
+            <span className="font-bold text-sm">{label}</span>
+          </Link>
+        ))}
+      </footer>
     </>
   );
 }
