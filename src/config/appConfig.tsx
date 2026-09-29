@@ -1,6 +1,7 @@
 export const appConfig = {
-  version: "2.1.0",
+  version: "2.1.1",
   changelogText: [
-    "Nowy krokowy interfejs wyboru trybu, kierunku i specjalności studiów",
+    "Poprawiono przewijanie listy kierunków w ustawieniach",
+    "Poprawiono odmianę liczby lekcji w widoku Mój dzień",
   ],
 };

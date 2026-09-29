@@ -61,7 +61,10 @@ export const InputSelectPure = ({
         />
       </Combobox.Target>
       <Combobox.Dropdown>
-        <Combobox.Options>
+        <Combobox.Options
+          mah="min(40vh, 18rem)"
+          style={{ overflowY: "auto", overscrollBehavior: "contain" }}
+        >
           {isLoading ? (
             <Combobox.Empty>Ładowanie....</Combobox.Empty>
           ) : (

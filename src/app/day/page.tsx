@@ -52,6 +52,15 @@ export default function MyDay() {
   const numberOfNotExcludedLessons = selectedWeekday.filter(
     (lesson) => !excludedLessons.includes(lesson.sourceLessonId ?? lesson.id),
   ).length;
+  const lessonCountForm = new Intl.PluralRules("pl").select(
+    numberOfNotExcludedLessons,
+  );
+  const lessonCountLabel =
+    lessonCountForm === "one"
+      ? "lekcja"
+      : lessonCountForm === "few"
+        ? "lekcje"
+        : "lekcji";
 
   return (
     <>
@@ -105,7 +114,7 @@ export default function MyDay() {
           >
             {!!selectedWeekday.length && (
               <h3 className="mb-4 mt-2 font-bold text-gray-400">
-                {numberOfNotExcludedLessons} lekcje
+                {numberOfNotExcludedLessons} {lessonCountLabel}
               </h3>
             )}
             <div className="flex gap-4 grow">
