@@ -87,7 +87,11 @@ pnpm audit --prod
 
 Next.js 16 nie uruchamia lintowania podczas `build`, więc wszystkie powyższe kroki należy wykonać oddzielnie. Build pobiera Inter i Roboto Mono z Google Fonts i wymaga dostępu do sieci. Zmienna `NEXT_PUBLIC_API_URL` jest ustalana podczas budowania.
 
-Po buildzie `pnpm start` uruchamia wersję produkcyjną. Sprawdź `/day`, `/timetable` i `/settings`, także po odświeżeniu strony i wejściu z linku udostępniania. Testy migracji wykonywano lokalnie na macOS; przed wdrożeniem trzeba również zweryfikować runtime Node/PM2 i natywne zależności Sharp na serwerze Linux.
+W obrazie Docker wersję produkcyjną uruchamia serwer `standalone`. Sprawdź `/day`, `/timetable` i `/settings`, także po odświeżeniu strony i wejściu z linku udostępniania. Testy migracji wykonywano lokalnie na macOS; przed wdrożeniem trzeba również zweryfikować Docker i natywne zależności Sharp na serwerze Linux.
+
+## Docker
+
+Umieść `NEXT_PUBLIC_API_URL` w lokalnym `.env` i upewnij się, że zewnętrzna sieć Docker `infra` istnieje. Uruchom `docker compose up -d --build`. Domyślnie aplikacja będzie dostępna na `127.0.0.1:8080`. Jeśli ten port jest zajęty, dodaj do `.env` np. `HOST_PORT=8082`. Zmienna API jest wymagana podczas budowania obrazu, więc po jej zmianie przebuduj obraz.
 
 ## Learn More
 
