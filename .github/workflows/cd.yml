@@ -1,28 +1,28 @@
-name: Node.js CD
+name: Deploy (main)
 
 on:
   push:
-    branches: [main]
+    branches: ["main"]
+
+concurrency:
+  group: urz-timetable-deploy
+  cancel-in-progress: true
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      - name: Deploy using ssh
-        uses: appleboy/ssh-action@master
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          port: ${{ secrets.PORT }}
+          port: ${{ secrets.PORT || 22 }}
+          command_timeout: 20m
           script: |
-            export NVM_DIR=~/.nvm
-            source ~/.nvm/nvm.sh
-            cd /var/www/urz-timetable
-            git reset --hard
-            git pull origin main
-            pnpm i
-            pnpm build
-            pm2 restart "Plan URz"
+            set -e
+            cd /var/www/docker/urz-timetable
+            git fetch origin main
+            git reset --hard origin/main
+            docker compose up -d --build
