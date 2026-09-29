@@ -6,13 +6,13 @@ import { useMemo } from "react";
 import { InputSelectPure, TInputSelectPureProps } from "./common/InputSelect";
 
 export const SelectMajor = (props: Partial<TInputSelectPureProps>) => {
-  const { majorId, setMajorId } = useAppState();
+  const { studyMode, majorId, setMajorId } = useAppState();
   const { data, isLoading } = useDictionaries();
 
   const options = useMemo(() => {
     if (!data) return [];
-    return majorOptions(data);
-  }, [data]);
+    return majorOptions(data, studyMode);
+  }, [data, studyMode]);
 
   const selectedOption = options.find((item) => item.value === majorId)?.value;
 

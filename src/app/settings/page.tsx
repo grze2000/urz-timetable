@@ -2,6 +2,7 @@
 import { SelectGroups } from "@/components/form/SelectGroups";
 import { SelectMajor } from "@/components/form/SelectMajor";
 import { SelectSpecialization } from "@/components/form/SelectSpecialization";
+import { SelectStudyMode } from "@/components/form/SelectStudyMode";
 import { appConfig } from "@/config/appConfig";
 import { Card, Divider } from "@mantine/core";
 import { FaInfo } from "react-icons/fa";
@@ -23,6 +24,17 @@ export default function Settings() {
             </h2>
           </div>
           <Card padding="lg" radius="md" withBorder p="sm">
+            <SelectStudyMode
+              inputStyles={{
+                input: {
+                  border: 0,
+                },
+                label: {
+                  color: "gray",
+                },
+              }}
+            />
+            <Divider my="sm" />
             <SelectMajor
               inputStyles={{
                 input: {

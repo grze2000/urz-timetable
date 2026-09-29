@@ -13,16 +13,22 @@ import { useMemo, useRef, useState } from "react";
 
 export default function MyDay() {
   const lessonListRef = useRef<HTMLDivElement>(null);
-  const [days] = useState(getNextDays);
   const [selectedDay, setSelectedDay] = useState(0);
-  const { majorId, specializationIds, excludedGroups } = useAppState();
+  const { studyMode, majorId, specializationIds, excludedGroups } =
+    useAppState();
+  const days = useMemo(
+    () => getNextDays(undefined, 14, studyMode === "FULL_TIME"),
+    [studyMode],
+  );
   const dictionaries = useDictionaries();
   const selectedDate = dayjs(days[selectedDay].date).format("YYYY-MM-DD");
   const isTeachingDay = isWithinTeachingPeriod(selectedDate);
-  const week = isTeachingDay
-    ? getWeekTypeFromDate(selectedDate, dictionaries.data?.generation)
-    : null;
+  const week =
+    isTeachingDay && studyMode === "FULL_TIME"
+      ? getWeekTypeFromDate(selectedDate, dictionaries.data?.generation)
+      : null;
   const { data, isError, isLoading } = useGetTimetable({
+    studyMode,
     week: week ?? 1,
     date: selectedDate,
     specializationIds,

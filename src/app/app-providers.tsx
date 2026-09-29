@@ -1,6 +1,7 @@
 "use client";
 import { SelectMajor } from "@/components/form/SelectMajor";
 import { SelectSpecialization } from "@/components/form/SelectSpecialization";
+import { SelectStudyMode } from "@/components/form/SelectStudyMode";
 import { appConfig } from "@/config/appConfig";
 import { navigationConfig } from "@/config/navigationConfig";
 import { useAppState } from "@/store/useAppState";
@@ -46,6 +47,7 @@ function AppShell({
   const pathname = usePathname();
   const {
     majorId,
+    studyMode,
     specializationIds,
     visitedAppVersion,
     setVisitedAppVersion,
@@ -103,6 +105,13 @@ function AppShell({
               </button>
             </p>
           )}
+          <SelectStudyMode
+            inputStyles={{
+              label: {
+                color: "white",
+              },
+            }}
+          />
           <SelectMajor
             inputStyles={{
               label: {
@@ -122,7 +131,10 @@ function AppShell({
             className="self-center"
             disabled={
               !dictionaries.data ||
-              !validSelection({ majorId, specializationIds }, dictionaries.data)
+              !validSelection(
+                { studyMode, majorId, specializationIds },
+                dictionaries.data,
+              )
             }
             onClick={() => setInitialSpecializationIds(specializationIds)}
           >

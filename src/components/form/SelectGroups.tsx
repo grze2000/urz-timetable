@@ -8,36 +8,45 @@ import {
 } from "./common/InputMultiselect";
 
 export const SelectGroups = (props: Partial<TInputMultiselectPureProps>) => {
-  const { majorId, specializationIds, excludedGroups, setExcludedGroups } =
-    useAppState();
-
   const {
-    data: weekA,
-    isLoading: isLoadingWeekA,
-    isError: isErrorWeekA,
-  } = useGetTimetable({
+    studyMode,
+    majorId,
+    specializationIds,
+    excludedGroups,
+    setExcludedGroups,
+  } = useAppState();
+
+  const firstQuery = useGetTimetable({
+    studyMode,
     week: 1,
     specializationIds,
     majorId,
   });
 
-  const {
-    data: weekB,
-    isLoading: isLoadingWeekB,
-    isError: isErrorWeekB,
-  } = useGetTimetable({
+  const secondQuery = useGetTimetable({
+    studyMode,
     week: 2,
     specializationIds,
     majorId,
+    enabled: studyMode === "FULL_TIME",
   });
 
-  const isLoading = isLoadingWeekA || isLoadingWeekB;
-  const isError = isErrorWeekA || isErrorWeekB;
-  const hasCompleteTimetable = !isLoading && !isError && !!weekA && !!weekB;
+  const isFullTime = studyMode === "FULL_TIME";
+  const isLoading =
+    firstQuery.isLoading || (isFullTime && secondQuery.isLoading);
+  const isError = firstQuery.isError || (isFullTime && secondQuery.isError);
+  const hasCompleteTimetable =
+    !isLoading &&
+    !isError &&
+    !!firstQuery.data &&
+    (!isFullTime || !!secondQuery.data);
 
   const groups = useMemo(() => {
     if (!hasCompleteTimetable) return [];
-    const groups = [...weekA, ...weekB];
+    const groups = [
+      ...firstQuery.data,
+      ...(isFullTime ? (secondQuery.data ?? []) : []),
+    ];
     return Array.from(
       new Map(
         groups.map((lesson) => [
@@ -46,7 +55,7 @@ export const SelectGroups = (props: Partial<TInputMultiselectPureProps>) => {
         ]),
       ).values(),
     );
-  }, [hasCompleteTimetable, weekA, weekB]);
+  }, [hasCompleteTimetable, isFullTime, firstQuery.data, secondQuery.data]);
 
   const selectedOptions = groups
     .filter((item) => !excludedGroups?.includes(item.value))
@@ -73,8 +82,7 @@ export const SelectGroups = (props: Partial<TInputMultiselectPureProps>) => {
       />
       {isError && (
         <p className="text-sm text-red-600">
-          Nie udało się pobrać grup z obu tygodni. Odśwież stronę i spróbuj
-          ponownie.
+          Nie udało się pobrać grup z planu. Odśwież stronę i spróbuj ponownie.
         </p>
       )}
     </>

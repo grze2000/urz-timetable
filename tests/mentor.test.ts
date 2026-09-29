@@ -13,12 +13,14 @@ import {
   addDays,
   isWithinTeachingPeriod,
   todayInWarsaw,
+  weekStart,
 } from "../src/utils/date.ts";
 import { getWeekTypeFromDate } from "../src/utils/getWeekTypeFromDate.ts";
 import { templateRange } from "../src/utils/getTemplateRange.ts";
 import { sortLessons } from "../src/utils/sortLessons.ts";
 import {
   majorOptions,
+  studyModeOptions,
   specializationOptions,
   validSelection,
 } from "../src/utils/getStudyOptions.ts";
@@ -83,6 +85,14 @@ const groups: Group[] = [
     studyMode: "PART_TIME",
     active: true,
   },
+  {
+    id: id(7),
+    name: "Specjalność niestacjonarna",
+    parentId: id(6),
+    level: "SPECIALIZATION",
+    studyMode: "UNASSIGNED",
+    active: true,
+  },
 ];
 const dictionaries: Dictionaries = {
   groups,
@@ -123,6 +133,8 @@ test("Warsaw date and calendar arithmetic handle timezones, DST and leap years",
   assert.equal(addDays("2026-10-25", 1), "2026-10-26");
   assert.equal(addDays("2026-03-29", 1), "2026-03-30");
   assert.equal(addDays("2028-02-28", 1), "2028-02-29");
+  assert.equal(weekStart("2026-10-03"), "2026-09-28");
+  assert.equal(addDays(weekStart("2026-10-03"), 6), "2026-10-04");
 });
 test("the teaching period runs from October through June in every year", () => {
   assert.equal(isWithinTeachingPeriod("2026-09-30"), false);
@@ -147,14 +159,39 @@ test("A/B uses source metadata and missing configuration is not invented", () =>
   });
   assert.equal(templateRange({ ...dictionaries, generation: null }, "A"), null);
 });
-test("existing course and specialty controls receive only valid active full-time options", () => {
-  assert.deepEqual(majorOptions(dictionaries), [
+test("study mode limits courses while specialties inherit their parent's mode", () => {
+  assert.deepEqual(studyModeOptions(dictionaries), [
+    { value: "FULL_TIME", label: "Stacjonarne" },
+    { value: "PART_TIME", label: "Niestacjonarne" },
+  ]);
+  assert.deepEqual(majorOptions(dictionaries, "FULL_TIME"), [
     { value: id(1), label: "Kierunek" },
+  ]);
+  assert.deepEqual(majorOptions(dictionaries, "PART_TIME"), [
+    { value: id(6), label: "Niestacjonarne" },
   ]);
   assert.deepEqual(specializationOptions(dictionaries, id(1)), [
     { value: id(2), label: "Specjalność" },
   ]);
-  assert.deepEqual(specializationOptions(dictionaries, id(6)), []);
+  assert.deepEqual(specializationOptions(dictionaries, id(6)), [
+    { value: id(7), label: "Specjalność niestacjonarna" },
+  ]);
+  assert.equal(
+    validSelection(
+      {
+        ...preferences,
+        studyMode: "PART_TIME",
+        majorId: id(6),
+        specializationIds: [id(7)],
+      },
+      dictionaries,
+    ),
+    true,
+  );
+  assert.equal(
+    validSelection({ ...preferences, studyMode: "PART_TIME" }, dictionaries),
+    false,
+  );
 });
 test("cards use Mentor lesson fields and the API end time", () => {
   const result = withGroupName(lesson(50, { endTime: "09:40" }), groups);
@@ -208,6 +245,11 @@ test("new UUID settings and links validate parent membership and reject legacy l
     readPreferences({ majorId: "old", specializationIds: ["old"] }).majorId,
     null,
   );
+  assert.equal(readPreferences({}).studyMode, "FULL_TIME");
+  assert.equal(
+    readPreferences({ studyMode: "PART_TIME" }).studyMode,
+    "PART_TIME",
+  );
   assert.equal(
     preferencesFromLink(
       new URLSearchParams("majorId=1&specializationIds=2"),
@@ -224,6 +266,7 @@ test("new UUID settings and links validate parent membership and reject legacy l
     { ...preferences, excludedGroups: [] },
   );
   assert.equal(new URL(shared).searchParams.has("old"), false);
+  assert.equal(new URL(shared).searchParams.get("studyMode"), "FULL_TIME");
   const params = new URLSearchParams({
     api: "mentor-ab",
     majorId: id(1),
@@ -236,6 +279,30 @@ test("new UUID settings and links validate parent membership and reject legacy l
   });
   params.set("excludedGroups", id(6));
   assert.equal(preferencesFromLink(params, dictionaries), null);
+  const partTimePreferences = {
+    ...preferences,
+    studyMode: "PART_TIME" as const,
+    majorId: id(6),
+    specializationIds: [id(7)],
+  };
+  const partTimeLink = createShareUrl(
+    "https://example.org/timetable",
+    partTimePreferences,
+  );
+  assert.deepEqual(
+    preferencesFromLink(new URL(partTimeLink).searchParams, dictionaries),
+    { ...partTimePreferences, excludedGroups: [] },
+  );
+  assert.equal(
+    new URL(partTimeLink).searchParams.get("studyMode"),
+    "PART_TIME",
+  );
+  const invalidModeLink = new URL(partTimeLink);
+  invalidModeLink.searchParams.set("studyMode", "POSTGRADUATE");
+  assert.equal(
+    preferencesFromLink(invalidModeLink.searchParams, dictionaries),
+    null,
+  );
 });
 test("deduplication uses UUID and deterministic chronological order", () => {
   assert.deepEqual(
@@ -276,7 +343,7 @@ test("breaks reset when the next date starts", () => {
 test("parsers accept additional fields and optional text but reject malformed core fields", () => {
   assert.equal(
     parseDictionaries({ ...dictionaries, extra: true }).groups.length,
-    6,
+    7,
   );
   assert.throws(() =>
     parseDictionaries({
@@ -316,6 +383,28 @@ test("actual-day requests keep the requested date and merge specialty UUIDs", as
   );
   assert.deepEqual(calls, [id(2), id(3)]);
   assert.equal(result.length, 3);
+});
+test("dated part-time requests retain Saturday and Sunday lessons", async () => {
+  const result = await getLessons(
+    {
+      specializationIds: [id(7)],
+      from: "2026-10-03",
+      to: "2026-10-04",
+    },
+    async ({ from, to }) => {
+      assert.equal(from, "2026-10-03");
+      assert.equal(to, "2026-10-04");
+      return [
+        lesson(61, { date: "2026-10-03" }),
+        lesson(62, { date: "2026-10-04" }),
+      ];
+    },
+  );
+
+  assert.deepEqual(
+    result.map((item) => item.date),
+    ["2026-10-03", "2026-10-04"],
+  );
 });
 test("truncation splits dates without overlaps or returning the truncated response", async () => {
   const result = await getLessons(

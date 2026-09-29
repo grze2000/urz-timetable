@@ -2,9 +2,11 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { emptyPreferences, readPreferences } from "./preferences";
 import type { Preferences } from "./preferences";
+import type { SupportedStudyMode } from "@/modules/timetable/types/StudyMode";
 
 export type TAppState = Preferences;
 export type TAppStateStore = TAppState & {
+  setStudyMode: (studyMode: SupportedStudyMode) => void;
   setMajorId: (majorId: string) => void;
   setSpecializationIds: (specializationIds: string[]) => void;
   setExcludedGroups: (excludedGroups: string[]) => void;
@@ -17,6 +19,14 @@ export const useAppState = create<TAppStateStore>()(
   persist(
     (set) => ({
       ...emptyPreferences(),
+      setStudyMode: (studyMode) =>
+        set({
+          studyMode,
+          majorId: null,
+          specializationIds: null,
+          excludedGroups: null,
+          excludedLessons: [],
+        }),
       setMajorId: (majorId) =>
         set({
           majorId,

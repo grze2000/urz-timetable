@@ -51,7 +51,8 @@ export const InputSelectPure = ({
       <Combobox.Target>
         <InputBase
           rightSection={<Combobox.Chevron />}
-          value={selectedItem?.label}
+          value={selectedItem?.label ?? ""}
+          readOnly
           onClick={() => combobox.toggleDropdown()}
           label={label}
           placeholder={placeholder}

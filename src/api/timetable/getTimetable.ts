@@ -7,30 +7,44 @@ import { withGroupName } from "@/utils/withGroupName";
 import { apiHost } from "./apiClient";
 import { getLessons } from "./getLessons";
 import { useDictionaries } from "./getDictionaries";
+import type { SupportedStudyMode } from "@/modules/timetable/types/StudyMode";
+import type { Dictionaries } from "@/modules/timetable/types/Dictionaries";
 
 export type TimetableParams = {
+  studyMode: SupportedStudyMode;
   week: number;
   specializationIds: string[] | null;
   majorId: string | null;
   date?: string;
+  range?: { from: string; to: string };
   enabled?: boolean;
 };
+
+function getRange(params: TimetableParams, dictionaries?: Dictionaries) {
+  if (params.date) return { from: params.date, to: params.date };
+  if (params.range) return params.range;
+  if (!dictionaries) return null;
+
+  if (params.studyMode === "PART_TIME") {
+    const period = dictionaries.lessonRange;
+    return period ? { from: period.startDate, to: period.endDate } : null;
+  }
+
+  return templateRange(dictionaries, params.week === 2 ? "B" : "A");
+}
 
 export const useGetTimetable = (params: TimetableParams) => {
   const dictionaries = useDictionaries();
   const specializationIds = [...new Set(params.specializationIds ?? [])].sort();
   const valid = dictionaries.data && validSelection(params, dictionaries.data);
-  const range = params.date
-    ? { from: params.date, to: params.date }
-    : dictionaries.data
-      ? templateRange(dictionaries.data, params.week === 2 ? "B" : "A")
-      : null;
+  const range = getRange(params, dictionaries.data);
 
   const query = useQuery({
     queryKey: [
       "mentor-ab",
       apiHost,
       "timetable",
+      params.studyMode,
       params.majorId,
       specializationIds,
       dictionaries.data?.generation?.id,
@@ -39,7 +53,7 @@ export const useGetTimetable = (params: TimetableParams) => {
     ],
     queryFn: async ({ signal }) => {
       if (!range || !dictionaries.data) {
-        throw new Error("Nie skonfigurowano tygodni A/B.");
+        throw new Error("Nie skonfigurowano zakresu planu.");
       }
       const lessons = await getLessons({ specializationIds, ...range, signal });
       return lessons.map((lesson) =>
@@ -50,7 +64,7 @@ export const useGetTimetable = (params: TimetableParams) => {
     retry: 1,
   });
 
-  const configurationError = !!valid && !range;
+  const configurationError = params.enabled !== false && !!valid && !range;
   return {
     ...query,
     isLoading: dictionaries.isLoading || query.isLoading,
@@ -59,7 +73,7 @@ export const useGetTimetable = (params: TimetableParams) => {
       dictionaries.error ??
       query.error ??
       (configurationError
-        ? new Error("Nie skonfigurowano tygodni A/B.")
+        ? new Error("Nie skonfigurowano zakresu planu.")
         : null),
   };
 };
