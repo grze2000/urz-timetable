@@ -41,6 +41,8 @@ function AppShell({
   headingFontClassName: string;
 }) {
   const pathname = usePathname();
+  const isScheduleRoute = pathname === "/day" || pathname === "/timetable";
+  const isAppRoute = isScheduleRoute || pathname === "/settings";
   const {
     studyMode,
     majorId,
@@ -50,7 +52,7 @@ function AppShell({
   } = useAppState();
   const searchParams = useSearchParams();
   const linkParams = searchParams.toString();
-  const dictionaries = useDictionaries();
+  const dictionaries = useDictionaries(isScheduleRoute);
   const hasSavedSelection =
     !!dictionaries.data &&
     validSelection(
@@ -69,7 +71,7 @@ function AppShell({
     } catch {
       /* Storage can be disabled by the browser. */
     }
-    if (!dictionaries.data) return;
+    if (!isScheduleRoute || !dictionaries.data) return;
     const current = useAppState.getState();
     if (!validSelection(current, dictionaries.data)) {
       const fromLink = preferencesFromLink(
@@ -78,9 +80,9 @@ function AppShell({
       );
       if (fromLink) current.replacePreferences(fromLink);
     }
-  }, [linkParams, dictionaries.data]);
+  }, [isScheduleRoute, linkParams, dictionaries.data]);
 
-  if (pathname !== "/settings") {
+  if (isScheduleRoute) {
     if (!dictionaries.data && dictionaries.isError) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-primary px-6 text-center text-white">
@@ -112,7 +114,7 @@ function AppShell({
 
   return (
     <>
-      {visitedAppVersion !== appConfig.version && (
+      {isAppRoute && visitedAppVersion !== appConfig.version && (
         <div
           className="fixed top-0 left-0 z-30 bg-green-500 text-white w-full shadow-sm py-1.5 px-2.5 flex items-center justify-between font-semibold"
           onClick={() =>

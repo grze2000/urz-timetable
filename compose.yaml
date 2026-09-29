@@ -4,6 +4,7 @@ services:
       context: .
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:?Set NEXT_PUBLIC_API_URL in .env}
+        SITE_URL: ${SITE_URL:?Set SITE_URL in .env}
     image: urz-timetable:prod
     restart: unless-stopped
     env_file:

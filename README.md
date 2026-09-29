@@ -15,7 +15,7 @@ Aplikacja ułatwia przeglądanie planu zajęć Uniwersytetu Rzeszowskiego wedłu
 
 Projekt wymaga Node.js >=20.9.0; do pracy i wdrożeń zalecana jest wspierana linia Node 24 LTS. Aktualizację zweryfikowano na Node 24.12.0 i pnpm 10.11.0.
 
-Ustaw `NEXT_PUBLIC_API_URL` w lokalnym pliku `.env`, a następnie zainstaluj zależności zgodnie z plikiem blokady:
+Ustaw `NEXT_PUBLIC_API_URL` oraz `SITE_URL` (publiczny adres aplikacji, bez ścieżki) w lokalnym pliku `.env`, a następnie zainstaluj zależności zgodnie z plikiem blokady. Obie zmienne są wymagane podczas budowania aplikacji i obrazu Docker.
 
 ```bash
 pnpm install --frozen-lockfile --strict-peer-dependencies
@@ -43,17 +43,17 @@ pnpm audit
 pnpm audit --prod
 ```
 
-Next.js 16 nie uruchamia lintowania podczas `build`, więc wszystkie powyższe kroki należy wykonać oddzielnie. Budowanie pobiera czcionki Inter i Roboto Mono z Google Fonts i wymaga dostępu do sieci. Zmienna `NEXT_PUBLIC_API_URL` jest ustalana podczas budowania.
+Next.js 16 nie uruchamia lintowania podczas `build`, więc wszystkie powyższe kroki należy wykonać oddzielnie. Budowanie pobiera czcionki Inter i Roboto Mono z Google Fonts i wymaga dostępu do sieci. Zmienne `NEXT_PUBLIC_API_URL` i `SITE_URL` są ustalane podczas budowania.
 
 W obrazie Docker wersję produkcyjną uruchamia serwer `standalone`. Sprawdź `/day`, `/timetable` i `/settings`, także po odświeżeniu strony i wejściu z linku udostępniania. Testy migracji wykonywano lokalnie na macOS; przed wdrożeniem trzeba również zweryfikować Docker i natywne zależności Sharp na serwerze Linux.
 
 ## Docker
 
-Umieść `NEXT_PUBLIC_API_URL` w lokalnym `.env` i upewnij się, że zewnętrzna sieć Docker `infra` istnieje. Uruchom `docker compose up -d --build`. Domyślnie aplikacja będzie dostępna na `127.0.0.1:8080`. Jeśli ten port jest zajęty, dodaj do `.env` np. `HOST_PORT=8082`. Zmienna API jest wymagana podczas budowania obrazu, więc po jej zmianie przebuduj obraz.
+Umieść `NEXT_PUBLIC_API_URL` i `SITE_URL` w lokalnym `.env` oraz upewnij się, że zewnętrzna sieć Docker `infra` istnieje. Uruchom `docker compose up -d --build`. Domyślnie aplikacja będzie dostępna na `127.0.0.1:8080`. Jeśli ten port jest zajęty, dodaj do `.env` np. `HOST_PORT=8082`. Po zmianie którejkolwiek z tych zmiennych przebuduj obraz.
 
 ## TODO
 
-- [ ] Favicon, tytuł, SEO
+- [x] Favicon, tytuł, SEO
 - [ ] Możliwość eksportu planu zajęć do pliku PDF do druku
 
 - [ ] Checkbox w ustawieniach pozwalający wybrać, czy link do udostępniania ma zawierać wykluczone przedmioty
@@ -61,7 +61,6 @@ Umieść `NEXT_PUBLIC_API_URL` w lokalnym `.env` i upewnij się, że zewnętrzna
 - [ ] Podgląd wykluczonych przedmiotów w ustawieniach i możliwość cofnięcia wykluczenia
 - [ ] Zweryfikować obsługę dni wolnych np. świąt
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
-- [ ] Dodać tytuły podstron (Przerobienie layoutu aby był renderowany serwer side)
 
 ## Historia zmian
 

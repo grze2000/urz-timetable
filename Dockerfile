@@ -8,7 +8,9 @@ FROM node:24-bookworm-slim AS builder
 WORKDIR /app
 RUN npm install --global pnpm@10.11.0
 ARG NEXT_PUBLIC_API_URL
+ARG SITE_URL
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV SITE_URL=${SITE_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm build
