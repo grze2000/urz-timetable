@@ -53,7 +53,7 @@ Umieść `NEXT_PUBLIC_API_URL` i `SITE_URL` w lokalnym `.env` oraz upewnij się,
 
 ## TODO
 
-- [x] Favicon, tytuł, SEO
+- [ ] Dodanie Google Analytics
 - [ ] Możliwość eksportu planu zajęć do pliku PDF do druku
 
 - [ ] Checkbox w ustawieniach pozwalający wybrać, czy link do udostępniania ma zawierać wykluczone przedmioty
@@ -63,6 +63,10 @@ Umieść `NEXT_PUBLIC_API_URL` i `SITE_URL` w lokalnym `.env` oraz upewnij się,
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
 
 ## Historia zmian
+
+### v.2.1.2
+
+- [x] Dodanie tytułów podstron, favicony i metadanych SEO
 
 ### v.2.1.1
 

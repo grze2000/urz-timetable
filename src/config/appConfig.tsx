@@ -1,7 +1,4 @@
 export const appConfig = {
-  version: "2.1.1",
-  changelogText: [
-    "Poprawiono przewijanie listy kierunków w ustawieniach",
-    "Poprawiono odmianę liczby lekcji w widoku Mój dzień",
-  ],
+  version: "2.1.2",
+  changelogText: ["Dodano tytuły podstron, faviconę i metadane SEO"],
 };
