@@ -1,7 +1,8 @@
 export const appConfig = {
-  version: "2.3.0",
+  version: "2.3.1",
   changelogText: [
-    "Możesz dodać aplikację do ekranu głównego i uruchamiać ją bezpośrednio z niego",
-    "Wcześniej otwarte dni i tygodnie planu są dostępne offline przez ograniczony czas",
+    "Dodano baner ułatwiający instalację aplikacji na ekranie głównym",
+    "Ujednolicono wygląd komunikatu trybu offline i zmniejszono nagłówki",
+    "Dodano informację o źródle danych w ustawieniach",
   ],
 };

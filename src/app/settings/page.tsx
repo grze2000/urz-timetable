@@ -5,12 +5,12 @@ import { SelectSpecialization } from "@/components/form/SelectSpecialization";
 import { SelectStudyMode } from "@/components/form/SelectStudyMode";
 import { appConfig } from "@/config/appConfig";
 import { Card, Divider } from "@mantine/core";
-import { FaInfo } from "react-icons/fa";
+import { FaDatabase, FaInfo } from "react-icons/fa";
 
 export default function Settings() {
   return (
     <>
-      <header className="bg-primary p-4 pt-12 font-bold text-2xl text-white z-20">
+      <header className="bg-primary p-4 pt-8 font-bold text-2xl text-white z-20">
         <h1 className="grow overflow-auto">Ustawienia</h1>
       </header>
       <main className="flex flex-col grow p-4 min-w-0 min-h-0 overflow-auto">
@@ -68,6 +68,28 @@ export default function Settings() {
               }}
             />
           </Card>
+          <section className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/25 text-primary w-7 h-7 flex justify-center items-center rounded-md">
+                <FaDatabase />
+              </div>
+              <h2 className="font-bold text-gray-500 text-lg">Źródło danych</h2>
+            </div>
+            <div className="pl-10">
+              <p className="text-sm text-gray-600">
+                Plan zajęć i dni wolne pochodzą z systemu Mentor Uniwersytetu
+                Rzeszowskiego.
+              </p>
+              <a
+                href="https://www.mentor.ur.edu.pl/uniwersytet-rzeszowski"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-block text-sm font-semibold text-primary underline"
+              >
+                Otwórz system Mentor
+              </a>
+            </div>
+          </section>
           {/* <div className="flex items-center gap-3">
         <div className="bg-primary/25 text-primary w-7 h-7 flex justify-center items-center rounded-md">
           <FaBan />

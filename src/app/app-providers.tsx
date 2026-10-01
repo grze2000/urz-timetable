@@ -1,5 +1,6 @@
 "use client";
 import { StudyOnboarding } from "@/components/onboarding/StudyOnboarding";
+import { InstallBanner } from "@/components/InstallBanner";
 import { appConfig } from "@/config/appConfig";
 import { navigationConfig } from "@/config/navigationConfig";
 import { useAppState } from "@/store/useAppState";
@@ -44,17 +45,6 @@ function AppShell({
 }) {
   const pathname = usePathname();
   const online = useOnlineStatus();
-  const [cacheUsed, setCacheUsed] = useState(false);
-
-  useEffect(() => {
-    const onMessage = (event: MessageEvent) => {
-      if (event.data?.type === "SCHEDULE_CACHE_USED") setCacheUsed(true);
-      if (event.data?.type === "SCHEDULE_NETWORK_USED") setCacheUsed(false);
-    };
-    navigator.serviceWorker?.addEventListener("message", onMessage);
-    return () =>
-      navigator.serviceWorker?.removeEventListener("message", onMessage);
-  }, []);
   const isScheduleRoute = pathname === "/day" || pathname === "/timetable";
   const isAppRoute = isScheduleRoute || pathname === "/settings";
   const {
@@ -134,7 +124,7 @@ function AppShell({
     <>
       {isAppRoute && visitedAppVersion !== appConfig.version && (
         <div
-          className="fixed top-0 left-0 z-30 bg-green-500 text-white w-full shadow-sm py-1.5 px-2.5 flex items-center justify-between font-semibold"
+          className="relative z-30 bg-green-500 text-white w-full shadow-sm py-1.5 px-2.5 flex items-center justify-between font-semibold"
           onClick={() =>
             modals.open({
               title: `Zmiany w wersji ${appConfig.version}`,
@@ -166,13 +156,6 @@ function AppShell({
           >
             <IoMdClose size={20} />
           </ActionIcon>
-        </div>
-      )}
-      {isScheduleRoute && (cacheUsed || !online) && (
-        <div role="status" className="bg-amber-100 px-4 py-2 text-amber-950">
-          {cacheUsed
-            ? "Wyświetlam zapisany plan. Dane mogą być nieaktualne."
-            : "Tryb offline. Wyświetlane dane mogą być nieaktualne."}
         </div>
       )}
       {children}
@@ -216,11 +199,24 @@ export default function AppProviders({
   headingFontClassName: string;
 }) {
   const [queryClient] = useState(() => new QueryClient());
+  const pathname = usePathname();
+  const online = useOnlineStatus();
+  const [cacheUsed, setCacheUsed] = useState(false);
   const hasMounted = useSyncExternalStore(
     subscribe,
     getClientSnapshot,
     getServerSnapshot,
   );
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.type === "SCHEDULE_CACHE_USED") setCacheUsed(true);
+      if (event.data?.type === "SCHEDULE_NETWORK_USED") setCacheUsed(false);
+    };
+    navigator.serviceWorker?.addEventListener("message", onMessage);
+    return () =>
+      navigator.serviceWorker?.removeEventListener("message", onMessage);
+  }, []);
 
   useEffect(() => {
     const refreshSchedule = () => {
@@ -250,6 +246,17 @@ export default function AppProviders({
       <QueryClientProvider client={queryClient}>
         <MantineProvider theme={theme}>
           <ModalsProvider>
+            <InstallBanner visible={hasMounted} />
+            {hasMounted &&
+              ["/day", "/timetable", "/settings"].includes(pathname) &&
+              (cacheUsed || !online) && (
+                <div
+                  role="status"
+                  className="border-b border-red-200 bg-red-100 px-4 py-1 text-sm text-red-800"
+                >
+                  Tryb offline. Dane mogą być nieaktualne.
+                </div>
+              )}
             <Suspense fallback={<AppLoading />}>
               {hasMounted ? (
                 <AppShell headingFontClassName={headingFontClassName}>

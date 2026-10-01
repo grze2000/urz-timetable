@@ -119,7 +119,7 @@ export default function Timetable() {
 
   return (
     <>
-      <header className="bg-primary p-4 pt-12 font-bold text-2xl text-white z-20 flex items-center">
+      <header className="bg-primary p-4 pt-8 font-bold text-2xl text-white z-20 flex items-center">
         <h1 className="grow overflow-auto">Plan zajęć</h1>
         <ActionIcon color="white" variant="subtle" size="lg" onClick={shareUrl}>
           <IoMdShare size={25} />

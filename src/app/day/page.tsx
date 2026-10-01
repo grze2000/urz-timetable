@@ -69,7 +69,7 @@ export default function MyDay() {
 
   return (
     <>
-      <header className="bg-primary p-4 pt-12 font-bold text-2xl text-white z-20">
+      <header className="bg-primary p-4 pt-8 font-bold text-2xl text-white z-20">
         <h1 className="grow overflow-auto">Mój dzień</h1>
       </header>
       <main className="flex flex-col grow p-4 min-w-0 min-h-0 overflow-auto">

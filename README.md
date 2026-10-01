@@ -63,7 +63,7 @@ Umieść `NEXT_PUBLIC_API_URL` i `SITE_URL` w lokalnym `.env` oraz upewnij się,
 
 ## Instalacja i dostęp offline
 
-Pod produkcyjnym adresem HTTPS otwórz aplikację i użyj funkcji przeglądarki „Dodaj do ekranu głównego” (Android) albo „Udostępnij” → „Do ekranu początkowego” (iOS). Aplikacja uruchomi się w osobnym oknie. Service worker działa tylko w wersji produkcyjnej i wymaga pierwszego uruchomienia online.
+Pod produkcyjnym adresem HTTPS aplikacja pokazuje baner instalacji, gdy przeglądarka udostępnia taką możliwość. W przeglądarkach obsługujących monit instalacyjny wybierz w banerze „Zainstaluj”. W Safari na iOS użyj „Udostępnij” → „Do ekranu początkowego”. Baner można zamknąć; nie pojawia się w uruchomionej aplikacji ani bez połączenia. Aplikacja uruchomi się w osobnym oknie. Service worker działa tylko w wersji produkcyjnej i wymaga pierwszego uruchomienia online.
 
 Otwórz online „Mój dzień” i te tygodnie A/B, które chcesz oglądać bez połączenia. Zapisywane są tylko pobrane odpowiedzi dla wybranego kierunku, specjalności i zakresu dat. Nie pobieramy całego planu z wyprzedzeniem. Aplikacja sprawdza sieć przy każdym nowym żądaniu, a gdy sieć nie działa, korzysta z zapisanych odpowiedzi. Dane pozostają w cache maksymalnie 7 dni; zapisane może być do 100 odpowiedzi z zajęciami. Przy użyciu cache pojawia się informacja, że plan może być nieaktualny. Dla dnia lub tygodnia bez zapisanych danych aplikacja prosi o połączenie z internetem. Po zmianie specjalności nowy plan trzeba otworzyć online. Pamięć przeglądarki może zostać wyczyszczona wcześniej.
 
@@ -80,6 +80,12 @@ Przed wdrożeniem sprawdź instalację na Androidzie i iOS pod HTTPS. Otwórz on
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
 
 ## Historia zmian
+
+### v.2.3.1
+
+- [x] Dodanie banera zachęcającego do instalacji aplikacji
+- [x] Ujednolicenie wyglądu komunikatu trybu offline i zmniejszenie nagłówków
+- [x] Dodanie informacji o źródle danych w ustawieniach
 
 ### v.2.3.0
 
