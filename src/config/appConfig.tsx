@@ -1,6 +1,7 @@
 export const appConfig = {
-  version: "2.2.0",
+  version: "2.3.0",
   changelogText: [
-    "Dodano informację o dniach wolnych na podstawie kalendarza świąt Mentor",
+    "Możesz dodać aplikację do ekranu głównego i uruchamiać ją bezpośrednio z niego",
+    "Wcześniej otwarte dni i tygodnie planu są dostępne offline przez ograniczony czas",
   ],
 };

@@ -5,5 +5,7 @@ node_modules
 coverage
 out
 build
+public/sw.js
+public/sw.js.map
 *.log
 .DS_Store

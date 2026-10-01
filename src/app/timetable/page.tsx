@@ -18,6 +18,7 @@ import {
 import { usePathname } from "next/navigation";
 import { useMemo, useState } from "react";
 import { IoMdShare } from "react-icons/io";
+import { useOnlineStatus } from "@/utils/useOnlineStatus";
 
 type TimetableGroup = {
   date: string;
@@ -38,6 +39,7 @@ const dayNames = [
 ];
 
 export default function Timetable() {
+  const online = useOnlineStatus();
   const pathname = usePathname();
   const { studyMode, majorId, specializationIds, excludedGroups } =
     useAppState();
@@ -192,7 +194,9 @@ export default function Timetable() {
 
           {canShowWeek && !!isError && (
             <div className="self-center my-auto text-gray-400 ">
-              Wystąpił błąd
+              {online
+                ? "Wystąpił błąd"
+                : "Brak zapisanych danych dla tego tygodnia. Połącz się z internetem, aby pobrać plan."}
             </div>
           )}
           {canShowWeek && isLoading && (

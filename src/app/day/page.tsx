@@ -9,9 +9,11 @@ import { Loader } from "@mantine/core";
 import dayjs from "dayjs";
 import { useDictionaries } from "@/api/timetable/getDictionaries";
 import { isWithinTeachingPeriod } from "@/utils/date";
+import { useOnlineStatus } from "@/utils/useOnlineStatus";
 import { useMemo, useRef, useState } from "react";
 
 export default function MyDay() {
+  const online = useOnlineStatus();
   const lessonListRef = useRef<HTMLDivElement>(null);
   const [selectedDay, setSelectedDay] = useState(0);
   const { studyMode, majorId, specializationIds, excludedGroups } =
@@ -134,7 +136,9 @@ export default function MyDay() {
                 )}
                 {!holiday && isTeachingDay && !!isError && (
                   <div className="self-center my-auto text-gray-400 ">
-                    Wystąpił błąd
+                    {online
+                      ? "Wystąpił błąd"
+                      : "Brak zapisanych danych dla tego dnia. Połącz się z internetem, aby pobrać plan."}
                   </div>
                 )}
                 {!holiday && isTeachingDay && isLoading && (

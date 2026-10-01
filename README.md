@@ -8,6 +8,7 @@ Aplikacja ułatwia przeglądanie planu zajęć Uniwersytetu Rzeszowskiego wedłu
 - [Uruchomienie](#uruchomienie)
 - [Sprawdzenie przed wdrożeniem](#sprawdzenie-przed-wdrożeniem)
 - [Docker](#docker)
+- [Instalacja i dostęp offline](#instalacja-i-dostęp-offline)
 - [TODO](#todo)
 - [Historia zmian](#historia-zmian)
 
@@ -47,17 +48,26 @@ Skrypt wykonuje kolejno:
 pnpm lint
 pnpm typecheck
 pnpm build
+serwist build serwist.config.mjs
 pnpm audit
 pnpm audit --prod
 ```
 
-Next.js 16 nie uruchamia lintowania podczas `build`, więc wszystkie powyższe kroki należy wykonać oddzielnie. Budowanie pobiera czcionki Inter i Roboto Mono z Google Fonts i wymaga dostępu do sieci. Zmienne `NEXT_PUBLIC_API_URL` i `SITE_URL` są ustalane podczas budowania.
+Next.js 16 nie uruchamia lintowania podczas `build`, więc wszystkie powyższe kroki należy wykonać oddzielnie. `pnpm build` uruchamia `next build`, a następnie buduje service worker przez Serwist. Budowanie pobiera czcionki Inter i Roboto Mono z Google Fonts i wymaga dostępu do sieci. Zmienne `NEXT_PUBLIC_API_URL` i `SITE_URL` są ustalane podczas budowania.
 
 W obrazie Docker wersję produkcyjną uruchamia serwer `standalone`. Sprawdź `/day`, `/timetable` i `/settings`, także po odświeżeniu strony i wejściu z linku udostępniania. Testy migracji wykonywano lokalnie na macOS; przed wdrożeniem trzeba również zweryfikować Docker i natywne zależności Sharp na serwerze Linux.
 
 ## Docker
 
 Umieść `NEXT_PUBLIC_API_URL` i `SITE_URL` w lokalnym `.env` oraz upewnij się, że zewnętrzna sieć Docker `infra` istnieje. Uruchom `docker compose up -d --build`. Domyślnie aplikacja będzie dostępna na `127.0.0.1:8080`. Jeśli ten port jest zajęty, dodaj do `.env` np. `HOST_PORT=8082`. Po zmianie którejkolwiek z tych zmiennych przebuduj obraz.
+
+## Instalacja i dostęp offline
+
+Pod produkcyjnym adresem HTTPS otwórz aplikację i użyj funkcji przeglądarki „Dodaj do ekranu głównego” (Android) albo „Udostępnij” → „Do ekranu początkowego” (iOS). Aplikacja uruchomi się w osobnym oknie. Service worker działa tylko w wersji produkcyjnej i wymaga pierwszego uruchomienia online.
+
+Otwórz online „Mój dzień” i te tygodnie A/B, które chcesz oglądać bez połączenia. Zapisywane są tylko pobrane odpowiedzi dla wybranego kierunku, specjalności i zakresu dat. Nie pobieramy całego planu z wyprzedzeniem. Aplikacja sprawdza sieć przy każdym nowym żądaniu, a gdy sieć nie działa, korzysta z zapisanych odpowiedzi. Dane pozostają w cache maksymalnie 7 dni; zapisane może być do 100 odpowiedzi z zajęciami. Przy użyciu cache pojawia się informacja, że plan może być nieaktualny. Dla dnia lub tygodnia bez zapisanych danych aplikacja prosi o połączenie z internetem. Po zmianie specjalności nowy plan trzeba otworzyć online. Pamięć przeglądarki może zostać wyczyszczona wcześniej.
+
+Przed wdrożeniem sprawdź instalację na Androidzie i iOS pod HTTPS. Otwórz online „Mój dzień” i oba tygodnie, zamknij aplikację, wyłącz sieć i uruchom ją ponownie. Sprawdź te same widoki i nieotwarty dzień, a następnie przywróć sieć i sprawdź odświeżenie planu, zmianę specjalności oraz dzień świąteczny.
 
 ## TODO
 
@@ -70,6 +80,11 @@ Umieść `NEXT_PUBLIC_API_URL` i `SITE_URL` w lokalnym `.env` oraz upewnij się,
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
 
 ## Historia zmian
+
+### v.2.3.0
+
+- [x] Dodanie aplikacji do ekranu głównego na Androidzie i iOS
+- [x] Dostęp offline do wcześniej otwartych dni i tygodni planu
 
 ### v.2.2.0
 

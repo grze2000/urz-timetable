@@ -61,6 +61,7 @@ export const useGetTimetable = (params: TimetableParams) => {
       );
     },
     enabled: params.enabled !== false && !!valid && !!range,
+    networkMode: "always",
     retry: 1,
   });
 

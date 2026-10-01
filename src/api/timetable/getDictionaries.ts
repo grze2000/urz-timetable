@@ -12,6 +12,7 @@ export const useDictionaries = (enabled = true) =>
     queryKey: ["mentor", apiHost, "dictionaries"],
     queryFn: ({ signal }) => getDictionaries(signal),
     staleTime: 30 * 60_000,
+    networkMode: "always",
     retry: 1,
     enabled,
   });

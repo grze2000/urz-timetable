@@ -6,6 +6,8 @@ import { useAppState } from "@/store/useAppState";
 import { useDictionaries } from "@/api/timetable/getDictionaries";
 import { emptyPreferences, preferencesFromLink } from "@/store/preferences";
 import { validSelection } from "@/utils/getStudyOptions";
+import { useOnlineStatus } from "@/utils/useOnlineStatus";
+import { SerwistProvider } from "@serwist/next/react";
 import {
   ActionIcon,
   Button,
@@ -41,6 +43,18 @@ function AppShell({
   headingFontClassName: string;
 }) {
   const pathname = usePathname();
+  const online = useOnlineStatus();
+  const [cacheUsed, setCacheUsed] = useState(false);
+
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.type === "SCHEDULE_CACHE_USED") setCacheUsed(true);
+      if (event.data?.type === "SCHEDULE_NETWORK_USED") setCacheUsed(false);
+    };
+    navigator.serviceWorker?.addEventListener("message", onMessage);
+    return () =>
+      navigator.serviceWorker?.removeEventListener("message", onMessage);
+  }, []);
   const isScheduleRoute = pathname === "/day" || pathname === "/timetable";
   const isAppRoute = isScheduleRoute || pathname === "/settings";
   const {
@@ -86,7 +100,11 @@ function AppShell({
     if (!dictionaries.data && dictionaries.isError) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-primary px-6 text-center text-white">
-          <p role="alert">Nie udało się pobrać kierunków.</p>
+          <p role="alert">
+            {online
+              ? "Nie udało się pobrać kierunków."
+              : "Brak zapisanych danych dla tego widoku. Połącz się z internetem, aby pobrać plan."}
+          </p>
           <Button variant="white" onClick={() => dictionaries.refetch()}>
             Spróbuj ponownie
           </Button>
@@ -150,6 +168,13 @@ function AppShell({
           </ActionIcon>
         </div>
       )}
+      {isScheduleRoute && (cacheUsed || !online) && (
+        <div role="status" className="bg-amber-100 px-4 py-2 text-amber-950">
+          {cacheUsed
+            ? "Wyświetlam zapisany plan. Dane mogą być nieaktualne."
+            : "Tryb offline. Wyświetlane dane mogą być nieaktualne."}
+        </div>
+      )}
       {children}
       <footer className="shadow-shadow flex justify-evenly py-2 bg-white rounded-t-xl text-[#bcc7de] z-20">
         {navigationConfig.map(({ label, href, icon: Icon }, index) => (
@@ -197,21 +222,46 @@ export default function AppProviders({
     getServerSnapshot,
   );
 
+  useEffect(() => {
+    const refreshSchedule = () => {
+      void queryClient.invalidateQueries({ queryKey: ["mentor"] });
+      void queryClient.invalidateQueries({ queryKey: ["mentor-ab"] });
+    };
+    window.addEventListener("online", refreshSchedule);
+    navigator.serviceWorker?.addEventListener(
+      "controllerchange",
+      refreshSchedule,
+    );
+    return () => {
+      window.removeEventListener("online", refreshSchedule);
+      navigator.serviceWorker?.removeEventListener(
+        "controllerchange",
+        refreshSchedule,
+      );
+    };
+  }, [queryClient]);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <MantineProvider theme={theme}>
-        <ModalsProvider>
-          <Suspense fallback={<AppLoading />}>
-            {hasMounted ? (
-              <AppShell headingFontClassName={headingFontClassName}>
-                {children}
-              </AppShell>
-            ) : (
-              <AppLoading />
-            )}
-          </Suspense>
-        </ModalsProvider>
-      </MantineProvider>
-    </QueryClientProvider>
+    <SerwistProvider
+      swUrl="/sw.js"
+      disable={process.env.NODE_ENV !== "production"}
+      reloadOnOnline={false}
+    >
+      <QueryClientProvider client={queryClient}>
+        <MantineProvider theme={theme}>
+          <ModalsProvider>
+            <Suspense fallback={<AppLoading />}>
+              {hasMounted ? (
+                <AppShell headingFontClassName={headingFontClassName}>
+                  {children}
+                </AppShell>
+              ) : (
+                <AppLoading />
+              )}
+            </Suspense>
+          </ModalsProvider>
+        </MantineProvider>
+      </QueryClientProvider>
+    </SerwistProvider>
   );
 }
