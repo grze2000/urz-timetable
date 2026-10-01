@@ -22,6 +22,9 @@ export default function MyDay() {
   );
   const dictionaries = useDictionaries();
   const selectedDate = dayjs(days[selectedDay].date).format("YYYY-MM-DD");
+  const holiday = dictionaries.data?.holidays.find(
+    (item) => item.date === selectedDate,
+  );
   const isTeachingDay = isWithinTeachingPeriod(selectedDate);
   const week =
     isTeachingDay && studyMode === "FULL_TIME"
@@ -33,20 +36,20 @@ export default function MyDay() {
     date: selectedDate,
     specializationIds,
     majorId,
-    enabled: isTeachingDay,
+    enabled: isTeachingDay && !holiday,
   });
   const { excludedLessons } = useAppState();
 
   const selectedWeekday = useMemo(
     () =>
       withBreaks(
-        (isTeachingDay ? (data ?? []) : []).filter(
+        (isTeachingDay && !holiday ? (data ?? []) : []).filter(
           (lesson) =>
             lesson.date === selectedDate &&
             !excludedGroups?.includes(lesson.groupId),
         ),
       ),
-    [isTeachingDay, data, selectedDate, excludedGroups],
+    [isTeachingDay, holiday, data, selectedDate, excludedGroups],
   );
 
   const numberOfNotExcludedLessons = selectedWeekday.filter(
@@ -119,20 +122,26 @@ export default function MyDay() {
             )}
             <div className="flex gap-4 grow">
               <div className="flex flex-col grow items-stretch">
-                {!isTeachingDay && (
+                {holiday && (
+                  <div className="self-center my-auto text-gray-400">
+                    {holiday.name} jest dniem wolnym. Nie masz dzisiaj zajęć
+                  </div>
+                )}
+                {!holiday && !isTeachingDay && (
                   <div className="self-center my-auto text-gray-400">
                     Trwają wakacje. W tym okresie nie ma zajęć.
                   </div>
                 )}
-                {isTeachingDay && !!isError && (
+                {!holiday && isTeachingDay && !!isError && (
                   <div className="self-center my-auto text-gray-400 ">
                     Wystąpił błąd
                   </div>
                 )}
-                {isTeachingDay && isLoading && (
+                {!holiday && isTeachingDay && isLoading && (
                   <Loader className="self-center my-auto" />
                 )}
-                {isTeachingDay &&
+                {!holiday &&
+                  isTeachingDay &&
                   !isError &&
                   !isLoading &&
                   selectedWeekday.length === 0 && (

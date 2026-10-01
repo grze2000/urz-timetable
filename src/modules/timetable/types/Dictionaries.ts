@@ -4,6 +4,7 @@ import type { StudyMode } from "./StudyMode.ts";
 export type Dictionaries = {
   groups: Group[];
   studyModes: StudyMode[];
+  holidays: { date: string; name: string }[];
   lessonRange: {
     startDate: string;
     endDate: string;

@@ -7,7 +7,21 @@ import { displayText, expectObject, expectValid } from "./parseResponse.ts";
 
 export function parseDictionaries(value: unknown): Dictionaries {
   const data = expectObject(value);
-  expectValid(Array.isArray(data.groups) && Array.isArray(data.studyModes));
+  expectValid(
+    Array.isArray(data.groups) &&
+      Array.isArray(data.studyModes) &&
+      Array.isArray(data.holidays),
+  );
+
+  const holidays = data.holidays.map((entry) => {
+    const holiday = expectObject(entry);
+    expectValid(
+      isDate(holiday.date) &&
+        typeof holiday.name === "string" &&
+        holiday.name.trim().length > 0,
+    );
+    return { date: holiday.date, name: holiday.name.trim() };
+  });
 
   const groups = data.groups.map((entry) => {
     const group = expectObject(entry);
@@ -74,6 +88,7 @@ export function parseDictionaries(value: unknown): Dictionaries {
 
   return {
     groups,
+    holidays,
     lessonRange,
     generation,
     studyModes: studyModes.filter((mode) =>

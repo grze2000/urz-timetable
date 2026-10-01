@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "node --env-file-if-exists=.env --experimental-strip-types --test tests/*.test.ts",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "check:deploy": "pnpm lint && pnpm typecheck && pnpm build && pnpm audit && pnpm audit --prod"
   },
   "dependencies": {
     "@mantine/core": "9.6.2",

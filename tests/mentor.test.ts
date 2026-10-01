@@ -97,6 +97,7 @@ const groups: Group[] = [
 const dictionaries: Dictionaries = {
   groups,
   studyModes: ["FULL_TIME", "PART_TIME"],
+  holidays: [],
   lessonRange: null,
   generation: {
     id: id(9),
@@ -366,6 +367,21 @@ test("parsers accept additional fields and optional text but reject malformed co
   assert.throws(() => parseLessons([{ ...raw, date: "2026-02-30" }]));
   assert.throws(() => parseLessons({ data: [raw] }));
 });
+
+test("dictionaries retain holiday dates and names from Mentor", () => {
+  const holiday = { date: "2026-11-11", name: " Święto Niepodległości " };
+  assert.deepEqual(
+    parseDictionaries({ ...dictionaries, holidays: [holiday] }).holidays,
+    [{ date: holiday.date, name: "Święto Niepodległości" }],
+  );
+  assert.throws(() =>
+    parseDictionaries({
+      ...dictionaries,
+      holidays: [{ date: "bad", name: "" }],
+    }),
+  );
+});
+
 test("actual-day requests keep the requested date and merge specialty UUIDs", async () => {
   const calls: string[] = [];
   const result = await getLessons(

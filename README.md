@@ -35,6 +35,14 @@ Projekt używa [`next/font`](https://nextjs.org/docs/basic-features/font-optimiz
 
 ## Sprawdzenie przed wdrożeniem
 
+Uruchom wszystkie kontrole jednym poleceniem:
+
+```bash
+pnpm check:deploy
+```
+
+Skrypt wykonuje kolejno:
+
 ```bash
 pnpm lint
 pnpm typecheck
@@ -59,10 +67,13 @@ Umieść `NEXT_PUBLIC_API_URL` i `SITE_URL` w lokalnym `.env` oraz upewnij się,
 - [ ] Checkbox w ustawieniach pozwalający wybrać, czy link do udostępniania ma zawierać wykluczone przedmioty
 - [ ] Możliwość wykluczenia zajęć z planu zajęć
 - [ ] Podgląd wykluczonych przedmiotów w ustawieniach i możliwość cofnięcia wykluczenia
-- [ ] Zweryfikować obsługę dni wolnych np. świąt
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
 
 ## Historia zmian
+
+### v.2.2.0
+
+- [x] Wyświetlanie informacji o dniach wolnych na podstawie kalendarza świąt Mentor
 
 ### v.2.1.2
 
