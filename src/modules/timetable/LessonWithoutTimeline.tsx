@@ -39,8 +39,8 @@ export const LessonWithoutTimeline = ({
         }}
       >
         <div className="flex flex-col gap-0.5 text-sm">
-          <div className="flex justify-between gap-1">
-            <span className="font-bold">
+          <div className="flex justify-between gap-1" data-lesson-heading>
+            <span className="font-bold" data-lesson-time>
               {startHour}:{startMinute} - {lesson.endTime}
             </span>
             <span className="font-bold text-md text-right">
@@ -55,7 +55,10 @@ export const LessonWithoutTimeline = ({
               </span>
             </div>
           </div>
-          <div className="flex justify-between items-end mt-3">
+          <div
+            className="flex justify-between items-end mt-3"
+            data-lesson-details
+          >
             <div>
               <div className="flex items-center gap-2">
                 <FaLocationPin />

@@ -9,6 +9,7 @@ Aplikacja ułatwia przeglądanie planu zajęć Uniwersytetu Rzeszowskiego wedłu
 - [Sprawdzenie przed wdrożeniem](#sprawdzenie-przed-wdrożeniem)
 - [Docker](#docker)
 - [Instalacja i dostęp offline](#instalacja-i-dostęp-offline)
+- [Eksport do PDF](#eksport-do-pdf)
 - [TODO](#todo)
 - [Historia zmian](#historia-zmian)
 
@@ -69,10 +70,15 @@ Otwórz online „Mój dzień” i te tygodnie A/B, które chcesz oglądać bez 
 
 Przed wdrożeniem sprawdź instalację na Androidzie i iOS pod HTTPS. Otwórz online „Mój dzień” i oba tygodnie, zamknij aplikację, wyłącz sieć i uruchom ją ponownie. Sprawdź te same widoki i nieotwarty dzień, a następnie przywróć sieć i sprawdź odświeżenie planu, zmianę specjalności oraz dzień świąteczny.
 
+## Eksport do PDF
+
+W zakładce „Plan zajęć” kliknij ikonkę pobierania obok udostępniania. Dla studiów stacjonarnych plik zawiera kolejno tygodnie A i B, a dla niestacjonarnych wybrany weekend. Dokument ma format A4 poziomo; długie plany zajmują dodatkowe strony z powtarzanymi nagłówkami. Kafelki są proporcjonalnie skalowane do szerokości kolumn, zachowując układ treści, odstępy i ikony z widoku planu. Karty zajęć i poprzedzające je przerwy pozostają razem, a eksport uwzględnia wykluczone grupy tak jak widok planu.
+
+PDF powstaje w przeglądarce jako obraz w wysokiej rozdzielczości, więc tekstu nie można zaznaczać ani wyszukiwać. Offline eksport wymaga wcześniej zapisanych danych obu tygodni lub wybranego weekendu oraz zasobów eksportu. Brak danych powoduje komunikat błędu zamiast pobrania niekompletnego dokumentu. Dla weekendów poza okresem zajęć eksport jest niedostępny.
+
 ## TODO
 
 - [ ] Dodanie Google Analytics
-- [ ] Możliwość eksportu planu zajęć do pliku PDF do druku
 
 - [ ] Checkbox w ustawieniach pozwalający wybrać, czy link do udostępniania ma zawierać wykluczone przedmioty
 - [ ] Możliwość wykluczenia zajęć z planu zajęć
@@ -80,6 +86,10 @@ Przed wdrożeniem sprawdź instalację na Androidzie i iOS pod HTTPS. Otwórz on
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
 
 ## Historia zmian
+
+### v.2.4.0
+
+- [x] Możliwość eksportu planu zajęć do pliku PDF do druku
 
 ### v.2.3.1
 

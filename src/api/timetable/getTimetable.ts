@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 import { templateRange } from "@/utils/getTemplateRange";
 import { validSelection } from "@/utils/getStudyOptions";
 import { withGroupName } from "@/utils/withGroupName";
@@ -33,13 +33,15 @@ function getRange(params: TimetableParams, dictionaries?: Dictionaries) {
   return templateRange(dictionaries, params.week === 2 ? "B" : "A");
 }
 
-export const useGetTimetable = (params: TimetableParams) => {
-  const dictionaries = useDictionaries();
+export function timetableQueryOptions(
+  params: TimetableParams,
+  dictionaries?: Dictionaries,
+) {
   const specializationIds = [...new Set(params.specializationIds ?? [])].sort();
-  const valid = dictionaries.data && validSelection(params, dictionaries.data);
-  const range = getRange(params, dictionaries.data);
+  const valid = dictionaries && validSelection(params, dictionaries);
+  const range = getRange(params, dictionaries);
 
-  const query = useQuery({
+  return queryOptions({
     queryKey: [
       "mentor-ab",
       apiHost,
@@ -47,23 +49,31 @@ export const useGetTimetable = (params: TimetableParams) => {
       params.studyMode,
       params.majorId,
       specializationIds,
-      dictionaries.data?.generation?.id,
+      dictionaries?.generation?.id,
       range?.from,
       range?.to,
     ],
     queryFn: async ({ signal }) => {
-      if (!range || !dictionaries.data) {
+      if (!range || !dictionaries) {
         throw new Error("Nie skonfigurowano zakresu planu.");
       }
+      if (!valid) throw new Error("Nieprawidłowy wybór planu.");
       const lessons = await getLessons({ specializationIds, ...range, signal });
       return lessons.map((lesson) =>
-        withGroupName(lesson, dictionaries.data.groups),
+        withGroupName(lesson, dictionaries.groups),
       );
     },
     enabled: params.enabled !== false && !!valid && !!range,
     networkMode: "always",
     retry: 1,
   });
+}
+
+export const useGetTimetable = (params: TimetableParams) => {
+  const dictionaries = useDictionaries();
+  const valid = dictionaries.data && validSelection(params, dictionaries.data);
+  const range = getRange(params, dictionaries.data);
+  const query = useQuery(timetableQueryOptions(params, dictionaries.data));
 
   const configurationError = params.enabled !== false && !!valid && !range;
   return {
