@@ -54,7 +54,7 @@ pnpm audit
 pnpm audit --prod
 ```
 
-Next.js 16 nie uruchamia lintowania podczas `build`, więc wszystkie powyższe kroki należy wykonać oddzielnie. `pnpm build` uruchamia `next build`, a następnie buduje service worker przez Serwist. Budowanie pobiera czcionki Inter i Roboto Mono z Google Fonts i wymaga dostępu do sieci. Zmienne `NEXT_PUBLIC_API_URL` i `SITE_URL` są ustalane podczas budowania.
+Next.js 16 nie uruchamia lintowania podczas `build`, więc wszystkie powyższe kroki należy wykonać oddzielnie. `pnpm build` uruchamia `next build`, a następnie buduje service worker przez Serwist. Budowanie pobiera czcionki Inter i Roboto Mono z Google Fonts i wymaga dostępu do sieci. Zmienne `NEXT_PUBLIC_API_URL`, `SITE_URL` i opcjonalna `NEXT_PUBLIC_GA_ID` są ustalane podczas budowania.
 
 W obrazie Docker wersję produkcyjną uruchamia serwer `standalone`. Sprawdź `/day`, `/timetable` i `/settings`, także po odświeżeniu strony i wejściu z linku udostępniania. Testy migracji wykonywano lokalnie na macOS; przed wdrożeniem trzeba również zweryfikować Docker i natywne zależności Sharp na serwerze Linux.
 
@@ -78,14 +78,17 @@ PDF powstaje w przeglądarce jako obraz w wysokiej rozdzielczości, więc tekstu
 
 ## TODO
 
-- [ ] Dodanie Google Analytics
-
 - [ ] Checkbox w ustawieniach pozwalający wybrać, czy link do udostępniania ma zawierać wykluczone przedmioty
 - [ ] Możliwość wykluczenia zajęć z planu zajęć
 - [ ] Podgląd wykluczonych przedmiotów w ustawieniach i możliwość cofnięcia wykluczenia
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
 
 ## Historia zmian
+
+### v.2.4.1
+
+- [x] Dodanie Google Analytics uruchamianego po wyrażeniu zgody
+- [x] Dodanie globalnego modala cookies, zapisu zgody w cookie oraz ustawień prywatności
 
 ### v.2.4.0
 

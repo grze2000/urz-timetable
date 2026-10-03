@@ -1,6 +1,7 @@
 "use client";
 import { StudyOnboarding } from "@/components/onboarding/StudyOnboarding";
 import { InstallBanner } from "@/components/InstallBanner";
+import { CookieConsentProvider } from "@/components/privacy/CookieConsentProvider";
 import { appConfig } from "@/config/appConfig";
 import { navigationConfig } from "@/config/navigationConfig";
 import { useAppState } from "@/store/useAppState";
@@ -98,6 +99,9 @@ function AppShell({
           <Button variant="white" onClick={() => dictionaries.refetch()}>
             Spróbuj ponownie
           </Button>
+          <Link href="/settings" className="text-sm underline">
+            Prywatność i ustawienia
+          </Link>
         </div>
       );
     }
@@ -194,9 +198,11 @@ function AppLoading() {
 export default function AppProviders({
   children,
   headingFontClassName,
+  gaId,
 }: {
   children: React.ReactNode;
   headingFontClassName: string;
+  gaId: string | null;
 }) {
   const [queryClient] = useState(() => new QueryClient());
   const pathname = usePathname();
@@ -257,15 +263,17 @@ export default function AppProviders({
                   Tryb offline. Dane mogą być nieaktualne.
                 </div>
               )}
-            <Suspense fallback={<AppLoading />}>
-              {hasMounted ? (
-                <AppShell headingFontClassName={headingFontClassName}>
-                  {children}
-                </AppShell>
-              ) : (
-                <AppLoading />
-              )}
-            </Suspense>
+            {hasMounted ? (
+              <CookieConsentProvider gaId={gaId}>
+                <Suspense fallback={<AppLoading />}>
+                  <AppShell headingFontClassName={headingFontClassName}>
+                    {children}
+                  </AppShell>
+                </Suspense>
+              </CookieConsentProvider>
+            ) : (
+              <AppLoading />
+            )}
           </ModalsProvider>
         </MantineProvider>
       </QueryClientProvider>

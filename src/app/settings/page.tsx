@@ -4,8 +4,9 @@ import { SelectMajor } from "@/components/form/SelectMajor";
 import { SelectSpecialization } from "@/components/form/SelectSpecialization";
 import { SelectStudyMode } from "@/components/form/SelectStudyMode";
 import { appConfig } from "@/config/appConfig";
+import { PrivacyLinks } from "@/components/privacy/PrivacyLinks";
 import { Card, Divider } from "@mantine/core";
-import { FaDatabase, FaInfo } from "react-icons/fa";
+import { FaDatabase, FaInfo, FaShieldAlt } from "react-icons/fa";
 
 export default function Settings() {
   return (
@@ -88,6 +89,17 @@ export default function Settings() {
               >
                 Otwórz system Mentor
               </a>
+            </div>
+          </section>
+          <section className="flex flex-col gap-3">
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/25 text-primary w-7 h-7 flex justify-center items-center rounded-md">
+                <FaShieldAlt />
+              </div>
+              <h2 className="font-bold text-gray-500 text-lg">Prywatność</h2>
+            </div>
+            <div className="pl-10">
+              <PrivacyLinks />
             </div>
           </section>
           {/* <div className="flex items-center gap-3">

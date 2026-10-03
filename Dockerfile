@@ -9,8 +9,10 @@ WORKDIR /app
 RUN npm install --global pnpm@10.11.0
 ARG NEXT_PUBLIC_API_URL
 ARG SITE_URL
+ARG NEXT_PUBLIC_GA_ID
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV SITE_URL=${SITE_URL}
+ENV NEXT_PUBLIC_GA_ID=${NEXT_PUBLIC_GA_ID}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm build

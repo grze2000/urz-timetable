@@ -10,6 +10,7 @@ import {
 } from "@/utils/getStudyOptions";
 import { Button } from "@mantine/core";
 import Image from "next/image";
+import Link from "next/link";
 import urzLogo from "public/urz-logo.png";
 import { useEffect, useRef, useState } from "react";
 import { ChoiceTile } from "./ChoiceTile";
@@ -105,7 +106,7 @@ export function StudyOnboarding({
   };
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col bg-primary text-white">
+    <main className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-primary text-white">
       <div className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col px-5 pb-5 pt-4 sm:pb-8 sm:pt-8">
         <Image
           src={urzLogo}
@@ -196,6 +197,12 @@ export function StudyOnboarding({
             />
           ))}
         </div>
+        <Link
+          href="/settings"
+          className="mt-4 shrink-0 self-center text-sm text-white underline"
+        >
+          Prywatność i ustawienia
+        </Link>
       </div>
     </main>
   );

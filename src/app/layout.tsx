@@ -7,6 +7,10 @@ import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 const robotoMono = Roboto_Mono({ subsets: ["latin"] });
+const gaId =
+  process.env.NODE_ENV === "production"
+    ? process.env.NEXT_PUBLIC_GA_ID?.trim() || null
+    : null;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -34,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="pl" className={`${inter.className} flex flex-col h-full`}>
       <body className="bg-background flex flex-col flex-1 max-h-full">
-        <AppProviders headingFontClassName={robotoMono.className}>
+        <AppProviders headingFontClassName={robotoMono.className} gaId={gaId}>
           {children}
         </AppProviders>
       </body>
