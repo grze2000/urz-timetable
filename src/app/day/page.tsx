@@ -5,6 +5,7 @@ import { withBreaks } from "@/utils/withBreaks";
 import { useAppState } from "@/store/useAppState";
 import { getNextDays } from "@/utils/getNextDays";
 import { getWeekTypeFromDate } from "@/utils/getWeekTypeFromDate";
+import { templateDate } from "@/utils/getTemplateRange";
 import { Loader } from "@mantine/core";
 import dayjs from "dayjs";
 import { useDictionaries } from "@/api/timetable/getDictionaries";
@@ -32,10 +33,18 @@ export default function MyDay() {
     isTeachingDay && studyMode === "FULL_TIME"
       ? getWeekTypeFromDate(selectedDate, dictionaries.data?.generation)
       : null;
+  const lessonDate =
+    studyMode === "FULL_TIME"
+      ? templateDate(selectedDate, dictionaries.data)
+      : selectedDate;
+  const missingGeneration =
+    studyMode === "FULL_TIME" &&
+    !!dictionaries.data &&
+    !dictionaries.data.generation;
   const { data, isError, isLoading } = useGetTimetable({
     studyMode,
     week: week ?? 1,
-    date: selectedDate,
+    date: studyMode === "PART_TIME" ? selectedDate : undefined,
     specializationIds,
     majorId,
     enabled: isTeachingDay && !holiday,
@@ -47,11 +56,11 @@ export default function MyDay() {
       withBreaks(
         (isTeachingDay && !holiday ? (data ?? []) : []).filter(
           (lesson) =>
-            lesson.date === selectedDate &&
+            lesson.date === lessonDate &&
             !excludedGroups?.includes(lesson.groupId),
         ),
       ),
-    [isTeachingDay, holiday, data, selectedDate, excludedGroups],
+    [isTeachingDay, holiday, data, lessonDate, excludedGroups],
   );
 
   const numberOfNotExcludedLessons = selectedWeekday.filter(
@@ -136,9 +145,13 @@ export default function MyDay() {
                 )}
                 {!holiday && isTeachingDay && !!isError && (
                   <div className="self-center my-auto text-gray-400 ">
-                    {online
-                      ? "Wystąpił błąd"
-                      : "Brak zapisanych danych dla tego dnia. Połącz się z internetem, aby pobrać plan."}
+                    {missingGeneration
+                      ? "Nie skonfigurowano tygodni wzorcowych w API."
+                      : online
+                        ? "Wystąpił błąd"
+                        : studyMode === "FULL_TIME"
+                          ? "Brak zapisanych danych dla tego tygodnia wzorcowego. Połącz się z internetem, aby pobrać plan."
+                          : "Brak zapisanych danych dla tego dnia. Połącz się z internetem, aby pobrać plan."}
                   </div>
                 )}
                 {!holiday && isTeachingDay && isLoading && (

@@ -16,7 +16,7 @@ import {
   weekStart,
 } from "../src/utils/date.ts";
 import { getWeekTypeFromDate } from "../src/utils/getWeekTypeFromDate.ts";
-import { templateRange } from "../src/utils/getTemplateRange.ts";
+import { templateDate, templateRange } from "../src/utils/getTemplateRange.ts";
 import { sortLessons } from "../src/utils/sortLessons.ts";
 import {
   majorOptions,
@@ -160,6 +160,34 @@ test("A/B uses source metadata and missing configuration is not invented", () =>
   });
   assert.equal(templateRange({ ...dictionaries, generation: null }, "A"), null);
 });
+test("selected weekdays map to the configured A/B source dates across years", () => {
+  assert.equal(templateDate("2026-10-15", dictionaries), "2026-10-01");
+  assert.equal(templateDate("2026-10-22", dictionaries), "2026-10-08");
+  assert.equal(templateDate("2026-10-12", dictionaries), "2026-09-28");
+  assert.equal(templateDate("2026-10-23", dictionaries), "2026-10-09");
+  assert.equal(templateDate("2027-01-01", dictionaries), "2026-10-09");
+  assert.equal(templateDate("2027-01-04", dictionaries), "2026-09-28");
+  assert.equal(templateDate("2026-10-15"), null);
+  assert.equal(
+    templateDate("2026-10-15", { ...dictionaries, generation: null }),
+    null,
+  );
+  assert.equal(templateDate("2026-10-17", dictionaries), null);
+  assert.equal(templateDate("2026-10-18", dictionaries), null);
+  assert.equal(templateDate("invalid", dictionaries), null);
+
+  const changed = {
+    ...dictionaries,
+    generation: {
+      ...dictionaries.generation!,
+      sourceWeekOneDate: "2026-10-12",
+      sourceWeekTwoDate: "2026-10-19",
+    },
+  };
+  assert.equal(templateDate("2026-10-15", changed), "2026-10-15");
+  assert.equal(templateDate("2026-10-22", changed), "2026-10-22");
+});
+
 test("study mode limits courses while specialties inherit their parent's mode", () => {
   assert.deepEqual(studyModeOptions(dictionaries), [
     { value: "FULL_TIME", label: "Stacjonarne" },

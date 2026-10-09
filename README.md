@@ -2,6 +2,8 @@
 
 Aplikacja ułatwia przeglądanie planu zajęć Uniwersytetu Rzeszowskiego według trybu studiów, kierunku i specjalności. Źródłem danych jest API systemu [Mentor Uniwersytetu Rzeszowskiego](https://www.mentor.ur.edu.pl/uniwersytet-rzeszowski).
 
+Dla studiów stacjonarnych „Mój dzień”, „Plan zajęć” i eksport PDF korzystają z tych samych tygodni wzorcowych A/B wskazanych przez API (`generation.sourceWeekOneDate` i `sourceWeekTwoDate`). Data wybrana w „Moim dniu” określa dzień tygodnia i tydzień A/B, a zajęcia pochodzą z odpowiedniego dnia wzorca, tak jak na stronie Mentor. Przykładowo przy wzorcu A zaczynającym się 28 września 2026 r. wybranie 15 października pokazuje zajęcia zapisane na 1 października. Święta i wakacje sprawdzamy dla wybranej daty. Daty wzorcowe zmieniają się dopiero wraz z konfiguracją API; nie przesuwają się automatycznie z kalendarzem. Brak konfiguracji wzorców powoduje komunikat błędu. Studia niestacjonarne korzystają z zajęć zapisanych na konkretne daty.
+
 ## Spis treści
 
 - [O aplikacji](#o-aplikacji)
@@ -66,9 +68,9 @@ Umieść `NEXT_PUBLIC_API_URL` i `SITE_URL` w lokalnym `.env` oraz upewnij się,
 
 Pod produkcyjnym adresem HTTPS aplikacja pokazuje baner instalacji, gdy przeglądarka udostępnia taką możliwość. W przeglądarkach obsługujących monit instalacyjny wybierz w banerze „Zainstaluj”. W Safari na iOS użyj „Udostępnij” → „Do ekranu początkowego”. Baner można zamknąć; nie pojawia się w uruchomionej aplikacji ani bez połączenia. Aplikacja uruchomi się w osobnym oknie. Service worker działa tylko w wersji produkcyjnej i wymaga pierwszego uruchomienia online.
 
-Otwórz online „Mój dzień” i te tygodnie A/B, które chcesz oglądać bez połączenia. Zapisywane są tylko pobrane odpowiedzi dla wybranego kierunku, specjalności i zakresu dat. Nie pobieramy całego planu z wyprzedzeniem. Aplikacja sprawdza sieć przy każdym nowym żądaniu, a gdy sieć nie działa, korzysta z zapisanych odpowiedzi. Dane pozostają w cache maksymalnie 7 dni; zapisane może być do 100 odpowiedzi z zajęciami. Przy użyciu cache pojawia się informacja, że plan może być nieaktualny. Dla dnia lub tygodnia bez zapisanych danych aplikacja prosi o połączenie z internetem. Po zmianie specjalności nowy plan trzeba otworzyć online. Pamięć przeglądarki może zostać wyczyszczona wcześniej.
+Otwórz online te tygodnie A/B, które chcesz oglądać bez połączenia. Dla studiów stacjonarnych „Mój dzień” pobiera cały wybrany tydzień wzorcowy i współdzieli jego cache z „Planem zajęć”. Wystarczy otworzyć jeden dzień tygodnia A i jeden dzień tygodnia B albo oba tygodnie w widoku planu, aby zapisać oba wzorce dla wybranych specjalności. Dla studiów niestacjonarnych zapisywane są pobrane dni lub weekendy. Nie pobieramy całego semestru z wyprzedzeniem. Aplikacja sprawdza sieć przy każdym nowym żądaniu, a gdy sieć nie działa, korzysta z zapisanych odpowiedzi. Dane pozostają w cache maksymalnie 7 dni; zapisane może być do 100 odpowiedzi z zajęciami. Przy użyciu cache pojawia się informacja, że plan może być nieaktualny. Dla wzorca, dnia lub weekendu bez zapisanych danych aplikacja prosi o połączenie z internetem. Po zmianie specjalności lub dat wzorcowych w API nowy plan trzeba otworzyć online. Pamięć przeglądarki może zostać wyczyszczona wcześniej.
 
-Przed wdrożeniem sprawdź instalację na Androidzie i iOS pod HTTPS. Otwórz online „Mój dzień” i oba tygodnie, zamknij aplikację, wyłącz sieć i uruchom ją ponownie. Sprawdź te same widoki i nieotwarty dzień, a następnie przywróć sieć i sprawdź odświeżenie planu, zmianę specjalności oraz dzień świąteczny.
+Przed wdrożeniem sprawdź instalację na Androidzie i iOS pod HTTPS. Otwórz online oba wzorce, zamknij aplikację, wyłącz sieć i uruchom ją ponownie. Sprawdź „Plan zajęć” i nieotwarte wcześniej daty w „Moim dniu”: dla studiów stacjonarnych powinny korzystać z zapisanych wzorców. Sprawdź też brak danych dla niezapisanego wzorca, a dla studiów niestacjonarnych nieotwarty dzień lub weekend. Następnie przywróć sieć i sprawdź odświeżenie planu, zmianę specjalności oraz dzień świąteczny.
 
 ## Eksport do PDF
 
@@ -84,6 +86,12 @@ PDF powstaje w przeglądarce jako obraz w wysokiej rozdzielczości, więc tekstu
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
 
 ## Historia zmian
+
+### v.2.4.2
+
+- [x] Ujednolicenie widoku Mój dzień z planem A/B na podstawie tygodni wzorcowych wskazanych przez API Mentora
+- [x] Współdzielenie cache tygodni wzorcowych między widokami Mój dzień i Plan zajęć, również offline
+- [x] Dodanie komunikatu błędu przy braku konfiguracji tygodni wzorcowych
 
 ### v.2.4.1
 
