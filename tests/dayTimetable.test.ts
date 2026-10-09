@@ -76,6 +76,7 @@ type Runtime = {
     savedDate: string | null;
     preferences: Preferences;
     online: boolean;
+    now: Date | null;
   };
   apiHost: string;
   apiClient: typeof import("../src/api/timetable/apiClient.ts").apiClient;
@@ -139,6 +140,12 @@ before(async () => {
               });
             `,
           }));
+          plugin.onLoad({ filter: /\/utils\/useDayClock\.ts$/ }, () => ({
+            contents: `
+              import { fixture } from "day-test-fixture";
+              export const useDayClock = () => ({ now: fixture.now, resume: 0 });
+            `,
+          }));
           plugin.onLoad({ filter: /\/utils\/useOnlineStatus\.ts$/ }, () => ({
             contents: `
             import { fixture } from "day-test-fixture";
@@ -180,6 +187,7 @@ function setup(
     savedDate: null,
     preferences: selection,
     online: true,
+    now: null,
   });
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, retryOnMount: false } },
@@ -413,5 +421,60 @@ test("part-time My Day continues to use actual dates without generation", () => 
   const html = runtime.render(client);
   assert.match(html, /Metodologia ze wzorca/);
   assert.doesNotMatch(html, /Nie skonfigurowano/);
+  client.clear();
+});
+
+test("My Day uses today's clock for template lessons and keeps future days unchanged", () => {
+  const client = setup();
+  runtime.fixture.now = new Date("2026-10-15T10:30:00Z");
+  const query = runtime.timetableQueryOptions(
+    { ...preferences, week: 1 },
+    dictionaries,
+  );
+  client.setQueryData(query.queryKey, [
+    lesson(1, { startTime: "09:45", endTime: "11:30" }),
+    lesson(2, { startTime: "13:00", endTime: "14:30" }),
+  ]);
+  const html = runtime.render(client);
+  assert.match(html, /Pozostało Ci 30 min przerwy/);
+  assert.match(html, /2 h 0 min do końca/);
+  assert.match(
+    html,
+    /background-color:color-mix\(in srgb, #[0-9a-f]{6} 25%, #e5e7eb\)/,
+  );
+  assert.match(html, /bg-primary/);
+  assert.match(html, /height:66\.666/);
+  assert.match(html, /Sala 213/);
+  runtime.fixture.date = "2026-10-29";
+  const future = runtime.render(client);
+  assert.doesNotMatch(future, /Pozostało Ci/);
+  assert.doesNotMatch(future, /min do końca/);
+  assert.doesNotMatch(
+    future,
+    /background-color:color-mix\(in srgb, #[0-9a-f]{6} 25%, #e5e7eb\)/,
+  );
+  assert.doesNotMatch(future, /height:66\.666/);
+  client.clear();
+});
+
+test("My Day applies progress to dated part-time lessons, including excluded cards", () => {
+  const selection = {
+    ...preferences,
+    studyMode: "PART_TIME" as const,
+    excludedLessons: [id(1)],
+  };
+  const client = setup("2026-10-15", dictionaries, selection);
+  runtime.fixture.now = new Date("2026-10-15T10:30:00Z");
+  const query = runtime.timetableQueryOptions(
+    { ...selection, date: "2026-10-15", week: 1 },
+    dictionaries,
+  );
+  client.setQueryData(query.queryKey, [lesson(1, { date: "2026-10-15" })]);
+  const html = runtime.render(client);
+  assert.match(
+    html,
+    /background-color:color-mix\(in srgb, #[0-9a-f]{6} 25%, #e5e7eb\)/,
+  );
+  assert.match(html, /line-through/);
   client.clear();
 });

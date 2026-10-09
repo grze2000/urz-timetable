@@ -35,6 +35,8 @@ pnpm dev
 
 Otwórz [http://localhost:3000](http://localhost:3000) w przeglądarce.
 
+Aby lokalnie sprawdzić „Mój dzień” dla dowolnej daty i godziny, ustaw `DEV_NOW` w `src/config/development.ts` np. na `"2026-10-15T12:35:00+02:00"` i zapisz plik. Fast Refresh zastosuje zmianę bez restartu `pnpm dev`. Ustawiony czas pozostaje stały i steruje dzisiejszą datą, kalendarzem, wyborem A/B, postępem, przerwami oraz przewijaniem. Dla Warszawy użyj przesunięcia `+02:00` w czasie letnim lub `+01:00` w zimowym. Po testach przywróć `null`. Niepoprawne wartości są ignorowane; w produkcji aplikacja zawsze korzysta z rzeczywistego czasu.
+
 Zmiany w `src/app/page.tsx` pojawią się automatycznie podczas pracy serwera deweloperskiego.
 
 Projekt używa [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) do optymalizacji czcionek.
@@ -87,9 +89,15 @@ PDF powstaje w przeglądarce jako obraz w wysokiej rozdzielczości, więc tekstu
 - [ ] Checkbox w ustawieniach pozwalający wybrać, czy link do udostępniania ma zawierać wykluczone przedmioty
 - [ ] Możliwość wykluczenia zajęć z planu zajęć
 - [ ] Podgląd wykluczonych przedmiotów w ustawieniach i możliwość cofnięcia wykluczenia
-- [ ] Wyświetlanie postępu w zajęciach na dany dzień
 
 ## Historia zmian
+
+### v.2.5.0
+
+- [x] Postęp bieżącego dnia na osi czasu w widoku Mój dzień
+- [x] Odliczanie czasu do końca przerwy i ostatnich zajęć, aktualizowane co 15 sekund oraz po powrocie do aplikacji
+- [x] Przygaszenie zakończonych zajęć z zachowaniem delikatnego koloru przedmiotu i oznaczeniem kółek na osi kolorem primary
+- [x] Automatyczne przewijanie dzisiejszego planu do bieżącej chwili przy wejściu i powrocie, bez zmiany pozycji podczas ręcznego przeglądania
 
 ### v.2.4.3
 

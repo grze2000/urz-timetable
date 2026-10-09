@@ -1,7 +1,8 @@
 export const appConfig = {
-  version: "2.4.3",
+  version: "2.5.0",
   changelogText: [
-    "Aplikacja automatycznie odświeża się po wykryciu nowej wersji online",
-    "Mój dzień zapamiętuje wybraną datę podczas przechodzenia między zakładkami",
+    "Mój dzień pokazuje postęp na osi czasu i wyróżnia zakończone zajęcia",
+    "Odliczanie czasu do końca przerwy i ostatnich zajęć w dzisiejszym planie",
+    "Automatyczne przewijanie dzisiejszego planu do bieżącej chwili przy wejściu i powrocie do aplikacji",
   ],
 };

@@ -14,12 +14,16 @@ import { useDictionaries } from "@/api/timetable/getDictionaries";
 import { isWithinTeachingPeriod, todayInWarsaw } from "@/utils/date";
 import { useOnlineStatus } from "@/utils/useOnlineStatus";
 import { useEffect, useMemo, useRef } from "react";
+import { useDayClock } from "@/utils/useDayClock";
+import { dayClock, remainingDay, timelineScrollTop } from "@/utils/dayProgress";
+import { appNow } from "@/utils/appNow";
 
 export default function MyDay() {
   const online = useOnlineStatus();
+  const { now, resume } = useDayClock();
   const lessonListRef = useRef<HTMLDivElement>(null);
   const { selectedDate: savedDate, selectDate } = useDaySession();
-  const today = todayInWarsaw();
+  const today = todayInWarsaw(now ?? appNow());
   const { studyMode, majorId, specializationIds, excludedGroups } =
     useAppState();
   const days = useMemo(
@@ -33,6 +37,8 @@ export default function MyDay() {
   const selectedDay = resolveSelectedDay(savedDate, availableDates, today);
   const dictionaries = useDictionaries();
   const selectedDate = availableDates[selectedDay];
+  const isToday = selectedDate === today;
+  const currentMinutes = isToday && now ? dayClock(now) : null;
 
   useEffect(() => {
     if (savedDate !== null && savedDate !== selectedDate) selectDate(null);
@@ -79,6 +85,36 @@ export default function MyDay() {
   const numberOfNotExcludedLessons = selectedWeekday.filter(
     (lesson) => !excludedLessons.includes(lesson.sourceLessonId ?? lesson.id),
   ).length;
+  const remainingDayLabel =
+    currentMinutes === null
+      ? null
+      : remainingDay(
+          currentMinutes,
+          selectedWeekday.map((lesson) => lesson.endTime),
+        );
+
+  useEffect(() => {
+    const list = lessonListRef.current;
+    if (!list || !isToday || !selectedWeekday.length) return;
+    const top = list.getBoundingClientRect().top;
+    const segments = Array.from(
+      list.querySelectorAll<HTMLElement>("[data-time-start]"),
+      (element) => ({
+        start: Number(element.dataset.timeStart),
+        end: Number(element.dataset.timeEnd),
+        top: element.getBoundingClientRect().top - top + list.scrollTop,
+        height: element.getBoundingClientRect().height,
+      }),
+    );
+    list.scrollTo({
+      top: timelineScrollTop(
+        segments,
+        dayClock(),
+        list.scrollHeight - list.clientHeight,
+      ),
+      behavior: "instant",
+    });
+  }, [selectedDate, selectedWeekday, isToday, resume]);
   const lessonCountForm = new Intl.PluralRules("pl").select(
     numberOfNotExcludedLessons,
   );
@@ -95,8 +131,8 @@ export default function MyDay() {
         <h1 className="grow overflow-auto">Mój dzień</h1>
       </header>
       <main className="flex flex-col grow p-4 min-w-0 min-h-0 overflow-auto">
-        <div className="flex flex-col max-h-full flex-1">
-          <div>
+        <div className="flex flex-col max-h-full min-h-0 flex-1">
+          <div className="shrink-0">
             <div className="flex justify-between items-end">
               <h2 className="text-primary font-bold text-lg flex flex-col">
                 <span className="text-gray-400 text-xs uppercase">
@@ -136,13 +172,20 @@ export default function MyDay() {
             </div>
           </div>
           <div
-            className="flex flex-col flex-1 overflow-auto pr-3"
+            className="flex flex-col flex-1 min-h-0 overflow-auto pr-3"
             ref={lessonListRef}
           >
             {!!selectedWeekday.length && (
-              <h3 className="mb-4 mt-2 font-bold text-gray-400">
-                {numberOfNotExcludedLessons} {lessonCountLabel}
-              </h3>
+              <div className="flex justify-between items-center gap-3 mb-4 mt-2 shrink-0">
+                <h3 className="font-bold text-gray-400">
+                  {numberOfNotExcludedLessons} {lessonCountLabel}
+                </h3>
+                {remainingDayLabel && (
+                  <span className="text-sm font-semibold text-gray-400">
+                    {remainingDayLabel}
+                  </span>
+                )}
+              </div>
             )}
             <div className="flex gap-4 grow">
               <div className="flex flex-col grow items-stretch">
@@ -180,7 +223,11 @@ export default function MyDay() {
                     </div>
                   )}
                 {selectedWeekday?.map((lesson, index) => (
-                  <Lesson key={lesson.id} lesson={lesson} />
+                  <Lesson
+                    key={lesson.id}
+                    lesson={lesson}
+                    currentMinutes={currentMinutes}
+                  />
                 ))}
               </div>
             </div>
