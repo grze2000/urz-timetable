@@ -1,6 +1,7 @@
 "use client";
 import { StudyOnboarding } from "@/components/onboarding/StudyOnboarding";
 import { InstallBanner } from "@/components/InstallBanner";
+import { AppUpdates } from "@/components/AppUpdates";
 import { CookieConsentProvider } from "@/components/privacy/CookieConsentProvider";
 import { appConfig } from "@/config/appConfig";
 import { navigationConfig } from "@/config/navigationConfig";
@@ -249,6 +250,7 @@ export default function AppProviders({
       disable={process.env.NODE_ENV !== "production"}
       reloadOnOnline={false}
     >
+      <AppUpdates />
       <QueryClientProvider client={queryClient}>
         <MantineProvider theme={theme}>
           <ModalsProvider>

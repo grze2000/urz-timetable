@@ -1,6 +1,7 @@
 export const appConfig = {
-  version: "2.4.2",
+  version: "2.4.3",
   changelogText: [
-    "Ujednolicono Mój dzień i plan A/B z tygodniami wzorcowymi URz",
+    "Aplikacja automatycznie odświeża się po wykryciu nowej wersji online",
+    "Mój dzień zapamiętuje wybraną datę podczas przechodzenia między zakładkami",
   ],
 };

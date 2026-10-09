@@ -4,6 +4,8 @@ Aplikacja ułatwia przeglądanie planu zajęć Uniwersytetu Rzeszowskiego wedłu
 
 Dla studiów stacjonarnych „Mój dzień”, „Plan zajęć” i eksport PDF korzystają z tych samych tygodni wzorcowych A/B wskazanych przez API (`generation.sourceWeekOneDate` i `sourceWeekTwoDate`). Data wybrana w „Moim dniu” określa dzień tygodnia i tydzień A/B, a zajęcia pochodzą z odpowiedniego dnia wzorca, tak jak na stronie Mentor. Przykładowo przy wzorcu A zaczynającym się 28 września 2026 r. wybranie 15 października pokazuje zajęcia zapisane na 1 października. Święta i wakacje sprawdzamy dla wybranej daty. Daty wzorcowe zmieniają się dopiero wraz z konfiguracją API; nie przesuwają się automatycznie z kalendarzem. Brak konfiguracji wzorców powoduje komunikat błędu. Studia niestacjonarne korzystają z zajęć zapisanych na konkretne daty.
 
+Wybrana data w „Moim dniu” jest zapamiętywana tylko w pamięci uruchomionej aplikacji. Przejście do innej zakładki i powrót zachowuje wybór, jeśli data nie jest w przeszłości i nadal znajduje się w prezentowanym kalendarzu. Nieprawidłowy wybór wraca do pierwszego dostępnego dnia. Zamknięcie strony lub aplikacji i rozpoczęcie nowej sesji, a także przeładowanie strony, resetuje wybór; data nie jest zapisywana w localStorage ani sessionStorage. Przy studiach stacjonarnych pierwszy dostępny dzień w weekend to najbliższy poniedziałek.
+
 ## Spis treści
 
 - [O aplikacji](#o-aplikacji)
@@ -68,6 +70,8 @@ Umieść `NEXT_PUBLIC_API_URL` i `SITE_URL` w lokalnym `.env` oraz upewnij się,
 
 Pod produkcyjnym adresem HTTPS aplikacja pokazuje baner instalacji, gdy przeglądarka udostępnia taką możliwość. W przeglądarkach obsługujących monit instalacyjny wybierz w banerze „Zainstaluj”. W Safari na iOS użyj „Udostępnij” → „Do ekranu początkowego”. Baner można zamknąć; nie pojawia się w uruchomionej aplikacji ani bez połączenia. Aplikacja uruchomi się w osobnym oknie. Service worker działa tylko w wersji produkcyjnej i wymaga pierwszego uruchomienia online.
 
+PWA sprawdza aktualizację kodu przy starcie, powrocie do widocznej aplikacji, odzyskaniu internetu i co 5 minut, gdy aplikacja jest widoczna i przeglądarka zgłasza połączenie. Nowy service worker aktywuje się od razu, a otwarta aplikacja automatycznie przeładowuje się po jego przejęciu kontroli. Przed przeładowaniem potwierdzamy dostępność wydania przez `/api/app-version`; ten endpoint korzysta wyłącznie z sieci i nie jest zapisywany w cache. Ukryte lub offline okno z nowym mechanizmem czeka z przeładowaniem do powrotu online i na ekran. Porównanie wersji wykrywa również aktualizację aktywowaną przed uruchomieniem nasłuchu; starszy worker nie powoduje przeładowania nowszego interfejsu. Wersje w `package.json` i `appConfig` trzeba podbijać wspólnie przy każdym wydaniu. Aby zaktualizować także otwarte okna starszych wydań bez tego mechanizmu, worker sprawdza ich wersję i przeładowuje je po udanym odczycie wersji z sieci, zachowując adres strony. Jeśli połączenia nie ma, ponawia tę kontrolę przy komunikacie cache wysyłanym przez aplikację m.in. po odzyskaniu internetu. Automatyczne przeładowanie nie usuwa zapisanych preferencji.
+
 Otwórz online te tygodnie A/B, które chcesz oglądać bez połączenia. Dla studiów stacjonarnych „Mój dzień” pobiera cały wybrany tydzień wzorcowy i współdzieli jego cache z „Planem zajęć”. Wystarczy otworzyć jeden dzień tygodnia A i jeden dzień tygodnia B albo oba tygodnie w widoku planu, aby zapisać oba wzorce dla wybranych specjalności. Dla studiów niestacjonarnych zapisywane są pobrane dni lub weekendy. Nie pobieramy całego semestru z wyprzedzeniem. Aplikacja sprawdza sieć przy każdym nowym żądaniu, a gdy sieć nie działa, korzysta z zapisanych odpowiedzi. Dane pozostają w cache maksymalnie 7 dni; zapisane może być do 100 odpowiedzi z zajęciami. Przy użyciu cache pojawia się informacja, że plan może być nieaktualny. Dla wzorca, dnia lub weekendu bez zapisanych danych aplikacja prosi o połączenie z internetem. Po zmianie specjalności lub dat wzorcowych w API nowy plan trzeba otworzyć online. Pamięć przeglądarki może zostać wyczyszczona wcześniej.
 
 Przed wdrożeniem sprawdź instalację na Androidzie i iOS pod HTTPS. Otwórz online oba wzorce, zamknij aplikację, wyłącz sieć i uruchom ją ponownie. Sprawdź „Plan zajęć” i nieotwarte wcześniej daty w „Moim dniu”: dla studiów stacjonarnych powinny korzystać z zapisanych wzorców. Sprawdź też brak danych dla niezapisanego wzorca, a dla studiów niestacjonarnych nieotwarty dzień lub weekend. Następnie przywróć sieć i sprawdź odświeżenie planu, zmianę specjalności oraz dzień świąteczny.
@@ -86,6 +90,12 @@ PDF powstaje w przeglądarce jako obraz w wysokiej rozdzielczości, więc tekstu
 - [ ] Wyświetlanie postępu w zajęciach na dany dzień
 
 ## Historia zmian
+
+### v.2.4.3
+
+- [x] Automatyczne przeładowanie aplikacji online po aktywacji nowej wersji PWA
+- [x] Sprawdzanie aktualizacji przy starcie, powrocie do aplikacji, odzyskaniu internetu oraz co 5 minut w widocznej aplikacji
+- [x] Zapamiętywanie wybranego dnia przy przechodzeniu między zakładkami w obrębie sesji aplikacji, z walidacją daty i zakresu kalendarza
 
 ### v.2.4.2
 

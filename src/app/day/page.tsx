@@ -3,28 +3,41 @@ import { useGetTimetable } from "@/api/timetable/getTimetable";
 import { Lesson } from "@/modules/timetable/Lesson";
 import { withBreaks } from "@/utils/withBreaks";
 import { useAppState } from "@/store/useAppState";
+import { useDaySession } from "@/store/useDaySession";
+import { resolveSelectedDay } from "@/utils/resolveSelectedDay";
 import { getNextDays } from "@/utils/getNextDays";
 import { getWeekTypeFromDate } from "@/utils/getWeekTypeFromDate";
 import { templateDate } from "@/utils/getTemplateRange";
 import { Loader } from "@mantine/core";
 import dayjs from "dayjs";
 import { useDictionaries } from "@/api/timetable/getDictionaries";
-import { isWithinTeachingPeriod } from "@/utils/date";
+import { isWithinTeachingPeriod, todayInWarsaw } from "@/utils/date";
 import { useOnlineStatus } from "@/utils/useOnlineStatus";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 export default function MyDay() {
   const online = useOnlineStatus();
   const lessonListRef = useRef<HTMLDivElement>(null);
-  const [selectedDay, setSelectedDay] = useState(0);
+  const { selectedDate: savedDate, selectDate } = useDaySession();
+  const today = todayInWarsaw();
   const { studyMode, majorId, specializationIds, excludedGroups } =
     useAppState();
   const days = useMemo(
-    () => getNextDays(undefined, 14, studyMode === "FULL_TIME"),
-    [studyMode],
+    () => getNextDays(dayjs(today).toDate(), 14, studyMode === "FULL_TIME"),
+    [studyMode, today],
   );
+  const availableDates = useMemo(
+    () => days.map((day) => dayjs(day.date).format("YYYY-MM-DD")),
+    [days],
+  );
+  const selectedDay = resolveSelectedDay(savedDate, availableDates, today);
   const dictionaries = useDictionaries();
-  const selectedDate = dayjs(days[selectedDay].date).format("YYYY-MM-DD");
+  const selectedDate = availableDates[selectedDay];
+
+  useEffect(() => {
+    if (savedDate !== null && savedDate !== selectedDate) selectDate(null);
+  }, [savedDate, selectedDate, selectDate]);
+
   const holiday = dictionaries.data?.holidays.find(
     (item) => item.date === selectedDate,
   );
@@ -98,12 +111,12 @@ export default function MyDay() {
             <div className="flex gap-3 py-3 overflow-x-auto">
               {days.map((day, index) => (
                 <div
-                  key={index}
+                  key={availableDates[index]}
                   className={`flex flex-col min-w-0 flex-1 border rounded py-4 px-8 items-center ${
                     selectedDay === index ? "bg-primary text-white" : "bg-white"
                   }`}
                   onClick={() => {
-                    setSelectedDay(index);
+                    selectDate(availableDates[index]);
                     lessonListRef.current?.scrollTo({
                       top: 0,
                       behavior: "smooth",

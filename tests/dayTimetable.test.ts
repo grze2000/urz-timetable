@@ -70,7 +70,13 @@ const lesson = (
 });
 
 type Runtime = {
-  fixture: { date: string; preferences: Preferences; online: boolean };
+  fixture: {
+    date: string;
+    dates?: string[];
+    savedDate: string | null;
+    preferences: Preferences;
+    online: boolean;
+  };
   apiHost: string;
   apiClient: typeof import("../src/api/timetable/apiClient.ts").apiClient;
   timetableQueryOptions: typeof import("../src/api/timetable/getTimetable.ts").timetableQueryOptions;
@@ -124,6 +130,15 @@ before(async () => {
             export const useAppState = () => fixture.preferences;
           `,
           }));
+          plugin.onLoad({ filter: /\/store\/useDaySession\.ts$/ }, () => ({
+            contents: `
+              import { fixture } from "day-test-fixture";
+              export const useDaySession = () => ({
+                selectedDate: fixture.savedDate,
+                selectDate: (date) => { fixture.savedDate = date; }
+              });
+            `,
+          }));
           plugin.onLoad({ filter: /\/utils\/useOnlineStatus\.ts$/ }, () => ({
             contents: `
             import { fixture } from "day-test-fixture";
@@ -133,12 +148,12 @@ before(async () => {
           plugin.onLoad({ filter: /\/utils\/getNextDays\.ts$/ }, () => ({
             contents: `
             import { fixture } from "day-test-fixture";
-            export const getNextDays = () => [{
-              date: new Date(fixture.date + "T12:00:00Z"),
-              day: fixture.date.slice(8),
-              label: fixture.date,
+            export const getNextDays = () => (fixture.dates ?? [fixture.date]).map((date) => ({
+              date: new Date(date + "T12:00:00Z"),
+              day: date.slice(8),
+              label: date,
               weekday: "dzień"
-            }];
+            }));
           `,
           }));
         },
@@ -161,6 +176,8 @@ function setup(
 ) {
   Object.assign(runtime.fixture, {
     date,
+    dates: undefined,
+    savedDate: null,
     preferences: selection,
     online: true,
   });
@@ -170,6 +187,22 @@ function setup(
   client.setQueryData(["mentor", runtime.apiHost, "dictionaries"], data);
   return client;
 }
+
+test("My Day restores the selected calendar date on repeated visits and rejects dates outside its range", () => {
+  const client = setup("2099-10-15");
+  runtime.fixture.dates = ["2099-10-15", "2099-10-16", "2099-10-19"];
+  runtime.fixture.savedDate = "2099-10-16";
+  for (let visit = 0; visit < 2; visit++) {
+    assert.match(runtime.render(client), /<span>2099-10-16 <\/span>/);
+  }
+  runtime.fixture.savedDate = "2099-10-20";
+  assert.match(runtime.render(client), /<span>2099-10-15 <\/span>/);
+  runtime.fixture.savedDate = "2020-10-15";
+  assert.match(runtime.render(client), /<span>2099-10-15 <\/span>/);
+  runtime.fixture.savedDate = null;
+  assert.match(runtime.render(client), /<span>2099-10-15 <\/span>/);
+  client.clear();
+});
 
 test("My Day shares the A/B cache and shows source records instead of dated lessons", () => {
   const client = setup();
